@@ -4,8 +4,13 @@
 *.iws
 .idea/
 
-#Gradle
+# Gradle
 .gradletasknamecache
-.gradle/
-build/
-bin/
+/.gradle/
+/build/
+/bin/
+
+# Eclipse
+.classpath
+.project
+/.settings/

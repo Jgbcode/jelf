@@ -1,11 +1,19 @@
 package net.fornwall.jelf;
 
 import java.io.File;
+import java.util.Scanner;
 
 public class Main {
 
 	public static void main(String[] args) throws Exception {
-		if (args.length != 1) {
+		if(args.length == 0) {
+			Scanner in = new Scanner(System.in);
+			System.out.print("Enter a file path: ");
+			args = new String[1];
+			args[0] = in.nextLine();
+			in.close();
+		}
+		else if (args.length != 1) {
 			System.out.println("Usage: java ELFFileParser <elf file>");
 			System.exit(0);
 		}
@@ -49,7 +57,5 @@ public class Main {
 				System.out.println("   INTERPRETER: " + ph.getIntepreter());
 			}
 		}
-		System.out.println("<-- End: reading " + elfFile.num_ph + " program headers.");
-
 	}
 }
