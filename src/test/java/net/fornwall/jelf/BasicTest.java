@@ -7,6 +7,8 @@ import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
 
+import net.fornwall.jelf.section.ElfSection;
+
 public class BasicTest {
 
 	private ElfFile parseFile(String name) throws ElfException, FileNotFoundException, IOException {
@@ -30,7 +32,7 @@ public class BasicTest {
 		ElfFile file = parseFile("android_arm_tset");
 		ElfHeader h = file.header;
 		
-		Assert.assertEquals(ElfHeader.Class.ELFCLASS32, h.ei_class);
+		Assert.assertEquals(ElfHeader.BitClass.ELFCLASS32, h.ei_class);
 		Assert.assertEquals(ElfHeader.Data.ELFDATA2LSB, h.ei_data);
 		Assert.assertEquals(ElfHeader.Type.EXEC, h.e_type);
 		Assert.assertEquals(ElfHeader.Machine.ARM, h.e_machine);
@@ -101,7 +103,7 @@ public class BasicTest {
 		ElfFile file = parseFile("android_arm_libncurses");
 		ElfHeader h = file.header;
 		
-		Assert.assertEquals(ElfHeader.Class.ELFCLASS32, h.ei_class);
+		Assert.assertEquals(ElfHeader.BitClass.ELFCLASS32, h.ei_class);
 		Assert.assertEquals(ElfHeader.Data.ELFDATA2LSB, h.ei_data);
 		Assert.assertEquals(ElfHeader.Type.DYN, h.e_type);
 		Assert.assertEquals(ElfHeader.Machine.ARM, h.e_machine);
@@ -113,7 +115,7 @@ public class BasicTest {
 		ElfFile file = parseFile("linux_amd64_bindash");
 		ElfHeader h = file.header;
 		
-		Assert.assertEquals(ElfHeader.Class.ELFCLASS64, h.ei_class);
+		Assert.assertEquals(ElfHeader.BitClass.ELFCLASS64, h.ei_class);
 		Assert.assertEquals(ElfHeader.Data.ELFDATA2LSB, h.ei_data);
 		Assert.assertEquals(ElfHeader.Type.DYN, h.e_type);
 		Assert.assertEquals(ElfHeader.Machine.X64, h.e_machine);

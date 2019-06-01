@@ -2,6 +2,8 @@ package net.fornwall.jelf;
 
 import java.io.IOException;
 
+import net.fornwall.jelf.section.ElfSection;
+
 /**
  * Class corresponding to the Elf32_Sym/Elf64_Sym struct.
  */
@@ -64,21 +66,21 @@ public final class ElfSymbol {
 	 */
 	public final short section_header_ndx; // Elf32_Half
 
-	private final int section_type;
+	private final ElfSection.Type section_type;
 
 	/** Offset from the beginning of the file to this symbol. */
 	public final long offset;
 
 	private final ElfFile file;
 
-	ElfSymbol(ElfFile file, long offset, int section_type) {
+	public ElfSymbol(ElfFile file, long offset, ElfSection.Type section_type) {
 		this.file = file;
 		ElfParser parser = file.parser;
 		ElfHeader header = file.header;
 		
 		parser.seek(offset);
 		this.offset = offset;
-		if (header.ei_class == ElfHeader.Class.ELFCLASS32) {
+		if (header.ei_class == ElfHeader.BitClass.ELFCLASS32) {
 			name_ndx = parser.readInt();
 			value = parser.readInt();
 			size = parser.readInt();
@@ -133,9 +135,9 @@ public final class ElfSymbol {
 
 		// Retrieve the name of the symbol from the correct string table.
 		String symbol_name = null;
-		if (section_type == ElfSection.SHT_SYMTAB) {
+		if (section_type == ElfSection.Type.SYMTAB) {
 			symbol_name = file.getStringTable().get(name_ndx);
-		} else if (section_type == ElfSection.SHT_DYNSYM) {
+		} else if (section_type == ElfSection.Type.DYNSYM) {
 			symbol_name = file.getDynamicStringTable().get(name_ndx);
 		}
 		return symbol_name;

@@ -5,16 +5,16 @@ import java.io.IOException;
 import java.nio.MappedByteBuffer;
 
 /** Package internal class used for parsing ELF files. */
-class ElfParser {
+public class ElfParser {
 
-	public final ElfHeader header;
+	private final ElfHeader header;
 	private final ByteArrayInputStream fsFile;
 
     private final MappedByteBuffer mappedByteBuffer;
     private final long mbbStartPosition;
 
 
-	ElfParser(ByteArrayInputStream fsFile) throws ElfException, IOException {
+	public ElfParser(ByteArrayInputStream fsFile) throws ElfException, IOException {
 		this.fsFile = fsFile;
         mappedByteBuffer = null;
         mbbStartPosition = -1;
@@ -22,7 +22,7 @@ class ElfParser {
         header.parse();
     }
 
-    ElfParser(MappedByteBuffer byteBuffer, long mbbStartPos) throws ElfException, IOException {
+    public ElfParser(MappedByteBuffer byteBuffer, long mbbStartPos) throws ElfException, IOException {
         mappedByteBuffer = byteBuffer;
         mbbStartPosition = mbbStartPos;
         mappedByteBuffer.position((int)mbbStartPosition);
@@ -44,19 +44,19 @@ class ElfParser {
 	/**
 	 * Signed byte utility functions used for converting from big-endian (MSB) to little-endian (LSB).
 	 */
-	short byteSwap(short arg) {
+	public short byteSwap(short arg) {
 		return (short) ((arg << 8) | ((arg >>> 8) & 0xFF));
 	}
 
-	int byteSwap(int arg) {
+	public int byteSwap(int arg) {
 		return ((byteSwap((short) arg)) << 16) | (((byteSwap((short) (arg >>> 16)))) & 0xFFFF);
 	}
 
-	long byteSwap(long arg) {
+	public long byteSwap(long arg) {
 		return ((((long) byteSwap((int) arg)) << 32) | (((long) byteSwap((int) (arg >>> 32))) & 0xFFFFFFFF));
 	}
 
-	short readUnsignedByte() {
+	public short readUnsignedByte() {
         int val = -1;
         if (fsFile != null) {
             val = fsFile.read();
@@ -69,26 +69,26 @@ class ElfParser {
 		return (short) val;
 	}
 
-	short readShort() throws ElfException {
+	public short readShort() throws ElfException {
 		int ch1 = readUnsignedByte();
 		int ch2 = readUnsignedByte();
 		short val = (short) ((ch1 << 8) + (ch2 << 0));
-		if (header.ei_data == ElfHeader.Data.ELFDATA2LSB) val = byteSwap(val);
+		if (header.getDataFormat() == ElfHeader.DataFormat.ELFDATA2LSB) val = byteSwap(val);
 		return val;
 	}
 
-	int readInt() throws ElfException {
+	public int readInt() throws ElfException {
 		int ch1 = readUnsignedByte();
 		int ch2 = readUnsignedByte();
 		int ch3 = readUnsignedByte();
 		int ch4 = readUnsignedByte();
 		int val = ((ch1 << 24) + (ch2 << 16) + (ch3 << 8) + (ch4 << 0));
 
-		if (header.ei_data == ElfHeader.Data.ELFDATA2LSB) val = byteSwap(val);
+		if (header.getDataFormat() == ElfHeader.DataFormat.ELFDATA2LSB) val = byteSwap(val);
 		return val;
 	}
 
-	long readLong() {
+	public long readLong() {
 		int ch1 = readUnsignedByte();
 		int ch2 = readUnsignedByte();
 		int ch3 = readUnsignedByte();
@@ -101,17 +101,17 @@ class ElfParser {
 		int val2 = ((ch5 << 24) + (ch6 << 16) + (ch7 << 8) + (ch8 << 0));
 
 		long val = ((long) (val1) << 32) + (val2 & 0xFFFFFFFFL);
-		if (header.ei_data == ElfHeader.Data.ELFDATA2LSB) val = byteSwap(val);
+		if (header.getDataFormat() == ElfHeader.DataFormat.ELFDATA2LSB) val = byteSwap(val);
 		return val;
 	}
 
 	/** Read four-byte int or eight-byte long depending on if {@link ElfFile#objectSize}. */
-	long readIntOrLong() {
-		return header.ei_class == ElfHeader.Class.ELFCLASS32 ? readInt() : readLong();
+	public long readIntOrLong() {
+		return header.getBitClass() == ElfHeader.BitClass.ELFCLASS32 ? readInt() : readLong();
 	}
 
 	/** Returns a big-endian unsigned representation of the int. */
-	long unsignedByte(int arg) {
+	public long unsignedByte(int arg) {
 		long val;
 		if (arg >= 0) {
 			val = arg;
@@ -131,4 +131,7 @@ class ElfParser {
         throw new IOException("No way to read from file or buffer");
 	}
 
+	public ElfHeader getHeader() {
+		return header;
+	}
 }

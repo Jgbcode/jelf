@@ -2,7 +2,7 @@ package net.fornwall.jelf;
 
 import java.io.IOException;
 
-class ElfNote {
+public class ElfNote {
     private int nameSize;
     private int descSize;
     private int type;

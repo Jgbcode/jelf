@@ -71,11 +71,11 @@ public class ElfSegment {
 	private MemoizedObject<String> ptInterpreter;
 
 	ElfSegment(final ElfFile file, long offset) {
-		ElfParser parser = file.parser;
-		ElfHeader header = file.header;
+		ElfParser parser = file.getParser();
+		ElfHeader header = file.getHeader();
 		
 		parser.seek(offset);
-		if (header.ei_class == ElfHeader.Class.ELFCLASS32) {
+		if (header.getBitClass() == ElfHeader.BitClass.ELFCLASS32) {
 			// typedef struct {
 			// Elf32_Word p_type;
 			// Elf32_Off p_offset;
@@ -119,7 +119,7 @@ public class ElfSegment {
 		case PT_INTERP:
 			ptInterpreter = new MemoizedObject<String>() {
 				@Override
-				protected String computeValue() throws ElfException, IOException {
+				protected String computeValue() throws ElfException {
 					parser.seek(ElfSegment.this.offset);
 					StringBuilder buffer = new StringBuilder();
 					int b;

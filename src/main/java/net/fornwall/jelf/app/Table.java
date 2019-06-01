@@ -1,4 +1,4 @@
-package net.fornwall.jelf;
+package net.fornwall.jelf.app;
 
 import java.util.ArrayList;
 import java.util.List;

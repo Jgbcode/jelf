@@ -8,7 +8,7 @@ public class ElfHeader {
 	/**
 	 *	Describes the size of the ELF file
 	 */
-	public enum Class {
+	public enum BitClass {
 		/** 32-bit objects. */
 		ELFCLASS32((byte)1),
 		/** 64-bit objects. */
@@ -16,25 +16,25 @@ public class ElfHeader {
 		
 		public final byte val;
 		
-		private Class(byte val) {
+		private BitClass(byte val) {
 			this.val = val;
 		}
 		
-		private static final Map<Byte, Class> map = new HashMap<Byte, Class>();
+		private static final Map<Byte, BitClass> map = new HashMap<Byte, BitClass>();
 		static {
-			for(Class c : Class.values())
+			for(BitClass c : BitClass.values())
 				map.put(c.val, c);
 		}
 		
-		public static Class fromByte(byte val) throws ElfException {
-			Class c = map.get(val);
+		public static BitClass fromByte(byte val) throws ElfException {
+			BitClass c = map.get(val);
 			if(c == null)
 				throw new ElfException("Invalid class: " + val);
 			return c;
 		}
 	}
 	
-	public enum Data {
+	public enum DataFormat {
 		/** Little endian format (LSB in lower address) */
 		ELFDATA2LSB((byte)1),
 		/** Big endian format (MSB in lower address) */
@@ -42,18 +42,18 @@ public class ElfHeader {
 		
 		public final byte val;
 		
-		private Data(byte val) {
+		private DataFormat(byte val) {
 			this.val = val;
 		}
 		
-		private static final Map<Byte, Data> map = new HashMap<Byte, Data>();
+		private static final Map<Byte, DataFormat> map = new HashMap<Byte, DataFormat>();
 		static {
-			for(Data d : Data.values())
+			for(DataFormat d : DataFormat.values())
 				map.put(d.val, d);
 		}
 		
-		public static Data fromByte(byte val) throws ElfException {
-			Data d = map.get(val);
+		public static DataFormat fromByte(byte val) throws ElfException {
+			DataFormat d = map.get(val);
 			if(d == null)
 				throw new ElfException("Invalid object size class: " + val);
 			return d;
@@ -87,7 +87,7 @@ public class ElfHeader {
 	/**
 	 *	Describes the type of ELF file
 	 */
-	public enum Type {
+	public enum FileType {
 		/** Relocatable file type. A possible value of {@link #file_type}. */
 		REL((short)1),
 		/** Executable file type. A possible value of {@link #file_type}. */
@@ -99,18 +99,18 @@ public class ElfHeader {
 		
 		public final short val;
 		
-		private Type(short val) {
+		private FileType(short val) {
 			this.val = val;
 		}
 		
-		private static final Map<Short, Type> map = new HashMap<Short, Type>();
+		private static final Map<Short, FileType> map = new HashMap<Short, FileType>();
 		static {
-			for(Type ft : Type.values())
+			for(FileType ft : FileType.values())
 				map.put(ft.val, ft);
 		}
 		
-		public static Type fromShort(short val) {
-			Type ft = map.get(val);
+		public static FileType fromShort(short val) {
+			FileType ft = map.get(val);
 			if(ft == null)
 				throw new ElfException("Invalid file type: " + val);
 			return ft;
@@ -168,41 +168,41 @@ public class ElfHeader {
 	
 	
 	/** Byte identifying the size of objects */
-	public Class ei_class;
+	private BitClass ei_class;
 	/**
 	 * Returns a byte identifying the data encoding of the processor specific data. This byte will be either
 	 * DATA_INVALID, DATA_LSB or DATA_MSB.
 	 */
-	public Data ei_data;
+	private DataFormat ei_data;
 	/** Version */
-	public Version ei_version; // Elf32_Word
+	private Version ei_version; // Elf32_Word
 	
 	
 	/** Identifies the object file type. */
-	public Type e_type; // Elf32_Half
+	private FileType e_type; // Elf32_Half
 	/** The required architecture. One of the ARCH_* constants in the class. */
-	public Machine e_machine; // Elf32_Half
+	private Machine e_machine; // Elf32_Half
 	/**
 	 * Virtual address to which the system first transfers control. If there is no entry point for the file the value is
 	 * 0.
 	 */
-	public long e_entry; // Elf32_Addr
+	private long e_entry; // Elf32_Addr
 	/** Program header table offset in bytes. If there is no program header table the value is 0. */
-	public long e_phoff; // Elf32_Off
+	private long e_phoff; // Elf32_Off
 	/** Section header table offset in bytes. If there is no section header table the value is 0. */
-	public long e_shoff; // Elf32_Off
+	private long e_shoff; // Elf32_Off
 	/** Processor specific flags. */
-	public int e_flags; // Elf32_Word
+	private int e_flags; // Elf32_Word
 	/** ELF header size in bytes. */
-	public short e_ehsize; // Elf32_Half
+	private short e_ehsize; // Elf32_Half
 	/** e_phentsize. Size of one entry in the file's program header table in bytes. All entries are the same size. */
-	public short e_phentsize; // Elf32_Half
+	private short e_phentsize; // Elf32_Half
 	/** e_phnum. Number of {@link ElfSegment} entries in the program header table, 0 if no entries. */
-	public short e_phnum; // Elf32_Half
+	private short e_phnum; // Elf32_Half
 	/** Section header entry size in bytes. */
-	public short e_shentsize; // Elf32_Half
+	private short e_shentsize; // Elf32_Half
 	/** Number of entries in the section header table, 0 if no entries. */
-	public short e_shnum; // Elf32_Half
+	private short e_shnum; // Elf32_Half
 	/**
 	 * Elf{32,64}_Ehdr#e_shstrndx. Index into the section header table associated with the section name string table.
 	 * SH_UNDEF if there is no section name string table.
@@ -221,8 +221,8 @@ public class ElfHeader {
 
         if (!(0x7f == ident[0] && 'E' == ident[1] && 'L' == ident[2] && 'F' == ident[3])) throw new ElfException("Bad magic number for file");
 
-        ei_class = Class.fromByte(ident[4]);
-        ei_data = Data.fromByte(ident[5]);
+        ei_class = BitClass.fromByte(ident[4]);
+        ei_data = DataFormat.fromByte(ident[5]);
         
         int elfVersion = ident[6];
         if (elfVersion != 1) throw new ElfException("Invalid elf version: " + elfVersion);
@@ -232,7 +232,7 @@ public class ElfHeader {
 	}
 	
 	public void parse() {
-        e_type = Type.fromShort(parser.readShort());
+        e_type = FileType.fromShort(parser.readShort());
         e_machine = Machine.fromShort(parser.readShort());
         ei_version = Version.fromByte(parser.readInt());
         e_entry = parser.readIntOrLong();
@@ -254,4 +254,66 @@ public class ElfHeader {
                     + " (the actual index of the section name string table section is contained in the sh_link field of the section header at index 0)");
         }
 	}
+
+	public BitClass getBitClass() {
+		return ei_class;
+	}
+
+	public DataFormat getDataFormat() {
+		return ei_data;
+	}
+
+	public Version getVersion() {
+		return ei_version;
+	}
+
+	public FileType getFileType() {
+		return e_type;
+	}
+
+	public Machine getMachine() {
+		return e_machine;
+	}
+
+	public long getEntryAddress() {
+		return e_entry;
+	}
+
+	public long getProgramHeaderOffset() {
+		return e_phoff;
+	}
+
+	public long getSectionHeaderOffset() {
+		return e_shoff;
+	}
+
+	public int getFlags() {
+		return e_flags;
+	}
+
+	public short getSize() {
+		return e_ehsize;
+	}
+
+	public short getProgramHeaderEntrySize() {
+		return e_phentsize;
+	}
+
+	public short getProgramHeaderEntryCount() {
+		return e_phnum;
+	}
+
+	public short getSectionHeaderEntrySize() {
+		return e_shentsize;
+	}
+
+	public short getSectionHeaderEntryCount() {
+		return e_shnum;
+	}
+
+	public short getSectionHeaderStringTableIndex() {
+		return e_shstrndx;
+	}
+	
+	
 }
