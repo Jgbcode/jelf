@@ -69,13 +69,16 @@ public final class ElfSymbol {
 	/** Offset from the beginning of the file to this symbol. */
 	public final long offset;
 
-	private final ElfFile elfHeader;
+	private final ElfFile file;
 
-	ElfSymbol(ElfParser parser, long offset, int section_type) {
-		this.elfHeader = parser.elfFile;
+	ElfSymbol(ElfFile file, long offset, int section_type) {
+		this.file = file;
+		ElfParser parser = file.parser;
+		ElfHeader header = file.header;
+		
 		parser.seek(offset);
 		this.offset = offset;
-		if (parser.elfFile.objectSize == ElfFile.CLASS_32) {
+		if (header.ei_class == ElfHeader.Class.ELFCLASS32) {
 			name_ndx = parser.readInt();
 			value = parser.readInt();
 			size = parser.readInt();
@@ -131,9 +134,9 @@ public final class ElfSymbol {
 		// Retrieve the name of the symbol from the correct string table.
 		String symbol_name = null;
 		if (section_type == ElfSection.SHT_SYMTAB) {
-			symbol_name = elfHeader.getStringTable().get(name_ndx);
+			symbol_name = file.getStringTable().get(name_ndx);
 		} else if (section_type == ElfSection.SHT_DYNSYM) {
-			symbol_name = elfHeader.getDynamicStringTable().get(name_ndx);
+			symbol_name = file.getDynamicStringTable().get(name_ndx);
 		}
 		return symbol_name;
 	}

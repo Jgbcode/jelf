@@ -127,11 +127,13 @@ public final class ElfSection {
 	private MemoizedObject<ElfDynamicStructure> dynamicStructure;
 	private MemoizedObject<ElfNote> note;
 
-	private final ElfFile elfHeader;
+	private final ElfFile file;
 
 	/** Reads the section header information located at offset. */
-	ElfSection(final ElfParser parser, long offset) {
-		this.elfHeader = parser.elfFile;
+	ElfSection(final ElfFile file, long offset) {
+		this.file = file;
+		ElfParser parser = file.parser;
+	
 		parser.seek(offset);
 
 		name_ndx = parser.readInt();
@@ -159,7 +161,7 @@ public final class ElfSection {
 				symbols[i] = new MemoizedObject<ElfSymbol>() {
 					@Override
 					public ElfSymbol computeValue() throws IOException {
-						return new ElfSymbol(parser, symbolOffset, type);
+						return new ElfSymbol(file, symbolOffset, type);
 					}
 				};
 			}
@@ -186,7 +188,7 @@ public final class ElfSection {
 			dynamicStructure = new MemoizedObject<ElfDynamicStructure>() {
 				@Override
 				protected ElfDynamicStructure computeValue() throws ElfException, IOException {
-					return new ElfDynamicStructure(parser, section_offset, (int) size);
+					return new ElfDynamicStructure(file, section_offset, (int) size);
 				}
 			};
 			break;
@@ -242,7 +244,7 @@ public final class ElfSection {
 	/** Returns the name of the section or null if the section has no name. */
 	public String getName() throws IOException {
 		if (name_ndx == 0) return null;
-		ElfStringTable tbl = elfHeader.getSectionNameStringTable();
+		ElfStringTable tbl = file.getSectionNameStringTable();
 		return tbl.get(name_ndx);
 	}
 

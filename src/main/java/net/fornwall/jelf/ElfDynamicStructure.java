@@ -140,7 +140,9 @@ public class ElfDynamicStructure {
 		}
 	}
 
-	public ElfDynamicStructure(final ElfParser parser, long offset, int size) {
+	public ElfDynamicStructure(final ElfFile file, long offset, int size) {
+		ElfParser parser = file.parser;
+		
 		parser.seek(offset);
 		int numEntries = size / 8;
 
@@ -163,7 +165,7 @@ public class ElfDynamicStructure {
 				dtStringTable = new MemoizedObject<ElfStringTable>() {
 					@Override
 					protected ElfStringTable computeValue() throws ElfException, IOException {
-						long fileOffsetForStringTable = parser.virtualMemoryAddrToFileOffset(d_val_or_ptr);
+						long fileOffsetForStringTable = file.virtualMemoryAddrToFileOffset(d_val_or_ptr);
 						return new ElfStringTable(parser, fileOffsetForStringTable, dt_strtab_size);
 					}
 				};

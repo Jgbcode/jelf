@@ -1,12 +1,10 @@
 package net.fornwall.jelf;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 public class BasicTest {
@@ -30,16 +28,18 @@ public class BasicTest {
 	@Test
 	public void testAndroidArmBinTset() throws ElfException, FileNotFoundException, IOException {
 		ElfFile file = parseFile("android_arm_tset");
-		Assert.assertEquals(ElfFile.CLASS_32, file.objectSize);
-		Assert.assertEquals(ElfFile.DATA_LSB, file.encoding);
-		Assert.assertEquals(ElfFile.FT_EXEC, file.file_type);
-		Assert.assertEquals(ElfFile.ARCH_ARM, file.arch);
-		Assert.assertEquals(32, file.ph_entry_size);
-		Assert.assertEquals(7, file.num_ph);
-		Assert.assertEquals(52, file.ph_offset);
-		Assert.assertEquals(40, file.sh_entry_size);
-		Assert.assertEquals(25, file.num_sh);
-		Assert.assertEquals(15856, file.sh_offset);
+		ElfHeader h = file.header;
+		
+		Assert.assertEquals(ElfHeader.Class.ELFCLASS32, h.ei_class);
+		Assert.assertEquals(ElfHeader.Data.ELFDATA2LSB, h.ei_data);
+		Assert.assertEquals(ElfHeader.Type.EXEC, h.e_type);
+		Assert.assertEquals(ElfHeader.Machine.ARM, h.e_machine);
+		Assert.assertEquals(32, h.e_phentsize);
+		Assert.assertEquals(7, h.e_phnum);
+		Assert.assertEquals(52, h.e_phoff);
+		Assert.assertEquals(40, h.e_shentsize);
+		Assert.assertEquals(25, h.e_shnum);
+		Assert.assertEquals(15856, h.e_shoff);
 		assertSectionNames(file, null, ".interp", ".dynsym", ".dynstr", ".hash", ".rel.dyn", ".rel.plt", ".plt", ".text");
 
 		ElfSection dynamic = file.getDynamicLinkSection();
@@ -99,26 +99,30 @@ public class BasicTest {
 	@Test
 	public void testAndroidArmLibNcurses() throws ElfException, FileNotFoundException, IOException {
 		ElfFile file = parseFile("android_arm_libncurses");
-		Assert.assertEquals(ElfFile.CLASS_32, file.objectSize);
-		Assert.assertEquals(ElfFile.DATA_LSB, file.encoding);
-		Assert.assertEquals(ElfFile.FT_DYN, file.file_type);
-		Assert.assertEquals(ElfFile.ARCH_ARM, file.arch);
+		ElfHeader h = file.header;
+		
+		Assert.assertEquals(ElfHeader.Class.ELFCLASS32, h.ei_class);
+		Assert.assertEquals(ElfHeader.Data.ELFDATA2LSB, h.ei_data);
+		Assert.assertEquals(ElfHeader.Type.DYN, h.e_type);
+		Assert.assertEquals(ElfHeader.Machine.ARM, h.e_machine);
 		Assert.assertEquals("/system/bin/linker", file.getInterpreter());
 	}
 
 	@Test
 	public void testLinxAmd64BinDash() throws ElfException, FileNotFoundException, IOException {
 		ElfFile file = parseFile("linux_amd64_bindash");
-		Assert.assertEquals(ElfFile.CLASS_64, file.objectSize);
-		Assert.assertEquals(ElfFile.DATA_LSB, file.encoding);
-		Assert.assertEquals(ElfFile.FT_DYN, file.file_type);
-		Assert.assertEquals(ElfFile.ARCH_X86_64, file.arch);
-		Assert.assertEquals(56, file.ph_entry_size);
-		Assert.assertEquals(9, file.num_ph);
-		Assert.assertEquals(64, file.sh_entry_size);
-		Assert.assertEquals(64, file.ph_offset);
-		Assert.assertEquals(27, file.num_sh);
-		Assert.assertEquals(119544, file.sh_offset);
+		ElfHeader h = file.header;
+		
+		Assert.assertEquals(ElfHeader.Class.ELFCLASS64, h.ei_class);
+		Assert.assertEquals(ElfHeader.Data.ELFDATA2LSB, h.ei_data);
+		Assert.assertEquals(ElfHeader.Type.DYN, h.e_type);
+		Assert.assertEquals(ElfHeader.Machine.X64, h.e_machine);
+		Assert.assertEquals(56, h.e_phentsize);
+		Assert.assertEquals(9, h.e_phnum);
+		Assert.assertEquals(64, h.e_phoff);
+		Assert.assertEquals(64, h.e_shentsize);
+		Assert.assertEquals(27, h.e_shnum);
+		Assert.assertEquals(119544, h.e_shoff);
 		assertSectionNames(file, null, ".interp", ".note.ABI-tag", ".note.gnu.build-id", ".gnu.hash", ".dynsym");
 
 		ElfDynamicStructure ds = file.getDynamicLinkSection().getDynamicSection();

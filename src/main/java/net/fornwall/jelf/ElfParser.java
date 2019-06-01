@@ -7,26 +7,28 @@ import java.nio.MappedByteBuffer;
 /** Package internal class used for parsing ELF files. */
 class ElfParser {
 
-	final ElfFile elfFile;
+	public final ElfHeader header;
 	private final ByteArrayInputStream fsFile;
 
     private final MappedByteBuffer mappedByteBuffer;
     private final long mbbStartPosition;
 
 
-	ElfParser(ElfFile elfFile, ByteArrayInputStream fsFile) {
-		this.elfFile = elfFile;
+	ElfParser(ByteArrayInputStream fsFile) throws ElfException, IOException {
 		this.fsFile = fsFile;
         mappedByteBuffer = null;
         mbbStartPosition = -1;
+        header = new ElfHeader(this);
+        header.parse();
     }
 
-    ElfParser(ElfFile elfFile, MappedByteBuffer byteBuffer, long mbbStartPos) {
-        this.elfFile = elfFile;
+    ElfParser(MappedByteBuffer byteBuffer, long mbbStartPos) throws ElfException, IOException {
         mappedByteBuffer = byteBuffer;
         mbbStartPosition = mbbStartPos;
         mappedByteBuffer.position((int)mbbStartPosition);
         fsFile = null;
+        header = new ElfHeader(this);
+        header.parse();
 	}
 
 	public void seek(long offset) {
@@ -71,7 +73,7 @@ class ElfParser {
 		int ch1 = readUnsignedByte();
 		int ch2 = readUnsignedByte();
 		short val = (short) ((ch1 << 8) + (ch2 << 0));
-		if (elfFile.encoding == ElfFile.DATA_LSB) val = byteSwap(val);
+		if (header.ei_data == ElfHeader.Data.ELFDATA2LSB) val = byteSwap(val);
 		return val;
 	}
 
@@ -82,7 +84,7 @@ class ElfParser {
 		int ch4 = readUnsignedByte();
 		int val = ((ch1 << 24) + (ch2 << 16) + (ch3 << 8) + (ch4 << 0));
 
-		if (elfFile.encoding == ElfFile.DATA_LSB) val = byteSwap(val);
+		if (header.ei_data == ElfHeader.Data.ELFDATA2LSB) val = byteSwap(val);
 		return val;
 	}
 
@@ -99,13 +101,13 @@ class ElfParser {
 		int val2 = ((ch5 << 24) + (ch6 << 16) + (ch7 << 8) + (ch8 << 0));
 
 		long val = ((long) (val1) << 32) + (val2 & 0xFFFFFFFFL);
-		if (elfFile.encoding == ElfFile.DATA_LSB) val = byteSwap(val);
+		if (header.ei_data == ElfHeader.Data.ELFDATA2LSB) val = byteSwap(val);
 		return val;
 	}
 
 	/** Read four-byte int or eight-byte long depending on if {@link ElfFile#objectSize}. */
 	long readIntOrLong() {
-		return elfFile.objectSize == ElfFile.CLASS_32 ? readInt() : readLong();
+		return header.ei_class == ElfHeader.Class.ELFCLASS32 ? readInt() : readLong();
 	}
 
 	/** Returns a big-endian unsigned representation of the int. */
@@ -117,24 +119,6 @@ class ElfParser {
 			val = (unsignedByte((short) (arg >>> 16)) << 16) | ((short) arg);
 		}
 		return val;
-	}
-
-	/**
-	 * Find the file offset from a virtual address by looking up the {@link ElfSegment} segment containing the
-	 * address and computing the resulting file offset.
-	 */
-	long virtualMemoryAddrToFileOffset(long address) throws IOException {
-		for (int i = 0; i < elfFile.num_ph; i++) {
-			ElfSegment ph = elfFile.getProgramHeader(i);
-			if (address >= ph.virtual_address && address < (ph.virtual_address + ph.mem_size)) {
-				long relativeOffset = address - ph.virtual_address;
-				if (relativeOffset >= ph.file_size)
-					throw new ElfException("Can not convert virtual memory address " + Long.toHexString(address) + " to file offset -" + " found segment " + ph
-							+ " but address maps to memory outside file range");
-				return ph.offset + relativeOffset;
-			}
-		}
-		throw new ElfException("Cannot find segment for address " + Long.toHexString(address));
 	}
 
 	public int read(byte[] data) throws IOException {

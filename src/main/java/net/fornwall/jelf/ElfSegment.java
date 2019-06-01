@@ -70,9 +70,12 @@ public class ElfSegment {
 
 	private MemoizedObject<String> ptInterpreter;
 
-	ElfSegment(final ElfParser parser, long offset) {
+	ElfSegment(final ElfFile file, long offset) {
+		ElfParser parser = file.parser;
+		ElfHeader header = file.header;
+		
 		parser.seek(offset);
-		if (parser.elfFile.objectSize == ElfFile.CLASS_32) {
+		if (header.ei_class == ElfHeader.Class.ELFCLASS32) {
 			// typedef struct {
 			// Elf32_Word p_type;
 			// Elf32_Off p_offset;

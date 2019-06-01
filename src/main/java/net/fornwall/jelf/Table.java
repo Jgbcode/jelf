@@ -15,8 +15,14 @@ public class Table {
 	private String seperator;
 	
 	public Table(String title) {
+		this(title, " ");
+	}
+	
+	public Table(String title, String seperator) {
 		this.title = title;
 		this.table = new ArrayList<ArrayList<String>>();
+		this.align = new ArrayList<Align>();
+		this.seperator = seperator;
 	}
 	
 	public void addCell(String cell) {
@@ -24,8 +30,6 @@ public class Table {
 	}
 	
 	public void newRow() {
-		if(align.size() != table.size())
-			align.add(Align.RIGHT);
 		table.add(new ArrayList<String>());
 	}
 	
@@ -62,7 +66,7 @@ public class Table {
 					
 				while(result.length() != colSizes.get(i))
 					result = rightAlign + result + leftAlign;
-				System.out.print(result + seperator);
+				System.out.print(seperator + result);
 			}
 			System.out.println();
 		}
