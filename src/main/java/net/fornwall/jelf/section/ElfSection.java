@@ -27,8 +27,6 @@ import net.fornwall.jelf.ElfParser;
  */
 public class ElfSection {
 	public static final class Type {
-		private Type() {};
-		
 		/**
 		 * Marks the section header as inactive; it does not have an associated section. Other members of 
 		 * the section header have undefined values.
@@ -86,11 +84,76 @@ public class ElfSection {
 		public static final int LOUSER = 0x80000000;
 		/** Upper bound of the range of indexes reserved for application programs. */
 		public static final int HIUSER = 0xffffffff;
+		
+		public final int val;
+		
+		public Type(int val) {
+			this.val = val;
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if(!(o instanceof Type))
+				return false;
+			return ((Type)o).val == this.val;
+		}
+		
+		/**
+		 * @return Returns the name of this type or "?" if unknown type
+		 */
+		public String name() {
+			switch(val) {
+			case NULL:
+				return "NULL";
+			case PROGBITS:
+				return "PROGBITS";
+			case SYMTAB:
+				return "SYMTAB";
+			case STRTAB:
+				return "STRTAB";
+			case RELA:
+				return "RELA";
+			case HASH:
+				return "HASH";
+			case DYNAMIC:
+				return "DYNAMIC";
+			case NOTE:
+				return "NOTE";
+			case NOBITS:
+				return "NOBITS";
+			case REL:
+				return "REL";
+			case SHLIB:
+				return "SHLIB";
+			case DYNSYM:
+				return "DYNSYM";
+			case  INIT_ARRAY:
+				return "INIT_ARRAY";
+			case FINI_ARRAY:
+				return "FINI_ARRAY";
+			case PREINIT_ARRAY:
+				return "PREINIT_ARRAY";
+			case GROUP:
+				return "GROUP";
+			case SYMTAB_SHNDX:
+				return "SYMTAB_SHNDX";
+			case GNU_VERDEF:
+				return "GNU_VERDEF";
+			case GNU_VERNEED:
+				return "GNU_VERNEED";
+			case GNU_VERSYM:
+				return "GNU_VERSYM";
+			default:
+				if(val >= LOOS && val <= HIOS)
+					return "OS RESERVED";
+				if(val >= LOPROC && val <= HIPROC)
+					return "PROC RESERVED";
+				return "?";
+			}
+		}
 	}
 	
 	public static final class Flag {
-		private Flag() {};
-		
 		/** Flag informing that this section contains data that should be writable during process execution. */
 		public static final int WRITE = 0x1;
 		/** Flag informing that section occupies memory during process execution. */
@@ -116,16 +179,102 @@ public class ElfSection {
 		/** Flag informing that all the bits in the mask are reserved for processor specific semantics. */
 		public static final int MASKPROC = 0xf0000000;
 		
+		public final long val;
+		
+		@Override
+		public boolean equals(Object o) {
+			if(!(o instanceof Flag))
+				return false;
+			return ((Flag)o).val == this.val;
+		}
+		
+		/**
+		 * @param f - the flags to test for
+		 * @return Returns true only if all of the flags in f are also set in this Flag object
+		 */
+		public boolean test(Flag f) {
+			return (this.val & f.val) == f.val;
+		}
+		
+		public Flag(long val) {
+			this.val = val;
+		}
+		
+		/**
+		 * Example: A flag with WRITE and ALLOC set would return "WA"
+		 * 
+		 * @return Returns the short hand name of this flag.
+		 */
+		public String name() {
+			String name = "";
+			for(int i = 1; i != 0; i <<= 1) {
+				switch((int)(val & i)) {
+				case 0:
+					break;
+				case WRITE:
+					name += "W";
+					break;
+				case ALLOC:
+					name += "A";
+					break;
+				case EXECINSTR:
+					name += "X";
+					break;
+				case MERGE:
+					name += "M";
+					break;
+				case STRINGS:
+					name += "S";
+					break;
+				case INFO_LINK:
+					name += "I";
+					break;
+				case LINK_ORDER:
+					name += "L";
+					break;
+				case OS_NONCONFORMING:
+					name += "O";
+					break;
+				case GROUP:
+					name += "G";
+					break;
+				case TLS:
+					name += "T";
+					break;
+				default:
+					if((val & i & MASKOS) != 0)
+						name += "o";
+					else if((val & i & MASKPROC) != 0)
+						name += "p";
+					else
+						name += "x";
+				}
+			}
+			
+			return name;
+		}
+		
+		/**
+		 * @return Returns a string which displays the meaning of the value returned by name()
+		 */
+		public static String getNameKey() {
+			// Taken from readelf, C (compressed) and E (excluded) are currently not
+			// supported by name()
+			return   "W (write), A (alloc), X (execute), M (merge), S (strings), I (info),\n" +
+					 "L (link order), O (extra OS processing required), G (group), T (TLS),\n" +
+					 "C (compressed), x (unknown), o (OS specific), E (exclude),\n" +
+					 "p (processor specific)\n";
+		}
 	}
 	
 	/** Index into the section header string table which gives the name of the section. */
 	private final int name_ndx; // Elf32_Word or Elf64_Word - 4 bytes in both.
 	
 	/** Section content and semantics. */
-	private final int type; // Elf32_Word or Elf64_Word - 4 bytes in both.
+	private final Type type; // Elf32_Word or Elf64_Word - 4 bytes in both.
 	
 	/** Flags. */
-	private final long flags; // Elf32_Word or Elf64_Xword.
+	private final Flag flags; // Elf32_Word or Elf64_Xword.
 	
 	/**
 	 * sh_addr. If the section will be in the memory image of a process this will be the address at which the first byte
@@ -161,8 +310,8 @@ public class ElfSection {
 		parser.seek(offset);
 
 		name_ndx = parser.readInt();
-		type = parser.readInt();
-		flags = parser.readIntOrLong();
+		type = new Type(parser.readInt());
+		flags = new Flag(parser.readIntOrLong());
 		address = parser.readIntOrLong();
 		section_offset = parser.readIntOrLong();
 		size = parser.readIntOrLong();
@@ -187,39 +336,19 @@ public class ElfSection {
 		this.entry_size = s.entry_size;
 	}
 	
-	public static ElfSection elfSectionFactory(final ElfFile file, long offset) {
+	public static ElfSection sectionFactory(final ElfFile file, long offset) {
 		ElfSection s = new ElfSection(file, offset);
 		
-		switch (s.type) {
+		switch (s.type.val) {
 		case Type.SYMTAB:
 		case Type.DYNSYM:
 			return new ElfSymbolTableSection(s);
 		case Type.STRTAB:
 			return new ElfStringTableSection(s);
 		case Type.HASH:
-//			hashTable = new MemoizedObject<ElfHashTable>() {
-//				@Override
-//				public ElfHashTable computeValue() throws IOException {
-//					return new ElfHashTable(parser, section_offset, (int) size);
-//				}
-//			};
-			break;
-		case Type.DYNAMIC:
-//			dynamicStructure = new MemoizedObject<ElfDynamicStructure>() {
-//				@Override
-//				protected ElfDynamicStructure computeValue() throws ElfException, IOException {
-//					return new ElfDynamicStructure(file, section_offset, (int) size);
-//				}
-//			};
-			break;
-		case Type.NOTE:
-//		    note = new MemoizedObject<ElfNote>() {
-//                @Override
-//                protected ElfNote computeValue() throws ElfException, IOException {
-//                    return new ElfNote(parser, section_offset, (int)size);
-//                }
-//            };
-			break;
+			return new ElfHashTableSection(s);
+		//case Type.DYNAMIC:
+		// case Type.NOTE:
 		default:
 			return s;
 		}
@@ -236,14 +365,14 @@ public class ElfSection {
 	/**
 	 * @return Returns the type of this section, see {@link Type Type}
 	 */
-	public int getType() {
+	public Type getType() {
 		return type;
 	}
 
 	/**
 	 * @return Returns the flags of this section, 
 	 */
-	public long getFlags() {
+	public Flag getFlags() {
 		return flags;
 	}
 
@@ -313,7 +442,7 @@ public class ElfSection {
 	 */
 	public String getName() {
 		if (name_ndx == 0) return "";
-		return file.getSectionHeaders().getNameStringTableSection().getString(name_ndx);
+		return file.getSectionHeaders().getSectionStringTable().getString(name_ndx);
 	}
 	
 	/**
@@ -321,5 +450,13 @@ public class ElfSection {
 	 */
 	public ElfSection getLink() {
 		return file.getSectionHeaders().getSectionByIndex(link);
+	}
+	
+	/**
+	 * @return Returns the section which is linked by this section after casting to the provided type
+	 * @throws ElfException if the cast is invalid
+	 */
+	public ElfSection getLink(Class<? extends ElfSection> c) {
+		return file.getSectionHeaders().getSectionByIndex(link, c);
 	}
 }

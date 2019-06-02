@@ -1,5 +1,7 @@
 package net.fornwall.jelf;
 
+import net.fornwall.jelf.segment.ElfSegment;
+
 public class ElfProgramHeaders {
 	private ElfSegment[] segments;
 	
@@ -9,7 +11,7 @@ public class ElfProgramHeaders {
 		segments = new ElfSegment[h.getProgramHeaderEntryCount()];
 		for (int i = 0; i < segments.length; i++) {
 			long programHeaderOffset = h.getProgramHeaderOffset() + (i * h.getProgramHeaderEntrySize());
-			segments[i] = new ElfSegment(file, programHeaderOffset);
+			segments[i] = ElfSegment.segmentFactory(file, programHeaderOffset);
 		}
 	}
 }

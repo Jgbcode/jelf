@@ -1,7 +1,6 @@
 package net.fornwall.jelf.app;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Scanner;
 
 import net.fornwall.jelf.ElfFile;
@@ -28,6 +27,8 @@ public class Main {
 		
 		// Similar to readelf -a <elf_file>
 		printHeader(file);
+		System.out.println();
+		printSectionHeaders(file);
 	}
 	
 	private static void printHeader(ElfFile file) {
@@ -60,7 +61,7 @@ public class Main {
 		t.newRow();
 		
 		t.addCell("Entry point address:");
-		t.addCell(Long.toHexString(h.getEntryAddress()));
+		t.addCell("0x" + Long.toHexString(h.getEntryAddress()));
 		t.newRow();
 		
 		t.addCell("Start of program headers:");
@@ -155,7 +156,35 @@ public class Main {
 			t.addCell("0x" + Long.toHexString(s.getSize()));
 			
 			// Type
+			t.addCell(s.getType().name());
 			
+			// EntSize
+			t.addCell("0x" + Long.toHexString(s.getEntrySize()));
+			
+			// Address
+			t.addCell("0x" + Long.toHexString(s.getAddress()));
+			
+			// Flags
+			t.addCell(s.getFlags().name());
+			
+			// Link
+			t.addCell(Integer.toString(s.getLinkIndex()));
+			
+			// Info
+			t.addCell(Integer.toString(s.getInfo()));
+			
+			// Offset
+			t.addCell("0x" + Long.toHexString(s.getFileOffset()));
+			
+			// Align
+			t.addCell(Long.toString(s.getAlignment()));
 		}
+		
+		t.printTable();
+		
+		// Print flag key
+		System.out.println("Key to Flags:");
+		for(String s : ElfSection.Flag.getNameKey().split("\n"))
+			System.out.println(" " + s);
 	}
 }

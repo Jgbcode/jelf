@@ -1,16 +1,16 @@
-package net.fornwall.jelf.sym;
+package net.fornwall.jelf.symbol;
 
 import net.fornwall.jelf.ElfFile;
 import net.fornwall.jelf.ElfHeader;
 import net.fornwall.jelf.ElfParser;
+import net.fornwall.jelf.section.ElfSection;
+import net.fornwall.jelf.section.ElfSymbolTableSection;
 
 /**
  * Class corresponding to the Elf32_Sym/Elf64_Sym struct.
  */
 public class ElfSymbol {
 	public static final class Binding {
-		private Binding() {};
-		
 		/** Binding specifying that local symbols are not visible outside the object file that contains its definition. */
 		public static final int LOCAL = 0;
 		/** Binding specifying that global symbols are visible to all object files being combined. */
@@ -22,25 +22,29 @@ public class ElfSymbol {
 		/** Upper bound binding values reserved for processor specific semantics. */
 		public static final int HIPROC = 15;
 		
-		public static final String string(int type) {
-			switch (type) {
+		public final int val;
+		
+		public Binding(int val) {
+			this.val = val;
+		}
+		
+		public String name() {
+			switch (val) {
 			case LOCAL:
-				return "local";
+				return "LOCAL";
 			case GLOBAL:
-				return "global";
+				return "GLOBAL";
 			case WEAK:
-				return "weak";
+				return "WEAK";
 			default:
-				if(type >= LOPROC && type <= HIPROC)
-					return "proc reserved";
+				if(val >= LOPROC && val <= HIPROC)
+					return "PROC_RESERVED";
 				return "?";
 			}
 		}
 	}
 
 	public static final class Type {
-		private Type() {};
-		
 		/** Type specifying that the symbol is unspecified. */
 		public static final byte NOTYPE = 0;
 		/** Type specifying that the symbol is associated with an object. */
@@ -68,21 +72,27 @@ public class ElfSymbol {
 		/** Upper bound for range reserved for processor-specific semantics. */
 		public static final byte HIPROC = 15;
 		
-		public static final String string(int type) {
-			switch (type) {
+		public final int val;
+		
+		public Type(int val) {
+			this.val = val;
+		}
+		
+		public String name() {
+			switch (val) {
 			case NOTYPE:
-				return "none";
+				return "NONE";
 			case OBJECT:
-				return "object";
+				return "OBJECT";
 			case FUNC:
-				return "function";
+				return "FUNCTION";
 			case SECTION:
-				return "section";
+				return "SECTION";
 			case FILE:
-				return "file";
+				return "FILE";
 			default:
-				if(type >= LOPROC && type <= HIPROC)
-					return "proc reserved";
+				if(val >= LOPROC && val <= HIPROC)
+					return "PROC_RESERVED";
 				return "?";
 			}
 		}
@@ -106,11 +116,17 @@ public class ElfSymbol {
 	 * ELFSectionHeader.NDX_LORESERVE and ELFSectionHeader.NDX_HIRESERVE.
 	 */
 	private final short section_header_ndx; // Elf32_Half
+	
+	// Calculated values
+	private final Binding binding;
+	private final Type type;
 
 	private final ElfFile file;
+	private final ElfSymbolTableSection table;
 	
-	private ElfSymbol(ElfFile file, long offset) {
+	private ElfSymbol(ElfFile file, ElfSymbolTableSection table, long offset) {
 		this.file = file;
+		this.table = table;
 		ElfParser parser = file.getParser();
 		ElfHeader header = file.getHeader();
 		
@@ -130,28 +146,35 @@ public class ElfSymbol {
 			value = parser.readLong();
 			size = parser.readLong();
 		}
+		
+		binding = new Binding(info >> 4);
+		type = new Type(info & 0xf);
 	}
 	
 	protected ElfSymbol(ElfSymbol sym) {
 		this.file = sym.file;
+		this.table = sym.table;
 		this.name_ndx = sym.name_ndx;
 		this.value = sym.value;
 		this.size = sym.size;
 		this.info = sym.info;
 		this.other = sym.other;
 		this.section_header_ndx = sym.section_header_ndx;
+		this.binding = sym.binding;
+		this.type = sym.type;
 	}
 	
-	public static ElfSymbol symbolFactory(ElfFile file, long offset) {
-		ElfSymbol s = new ElfSymbol(file, offset);
+	public static ElfSymbol symbolFactory(ElfFile file, ElfSymbolTableSection table, long offset) {
+		ElfSymbol s = new ElfSymbol(file, table, offset);
 		
 		/*
-		 * Return subclass if needed
+		 * TODO: Return subclass if needed
 		 */
 		
 		return s;
 	}
 	
+	/** @return Gets the index of this symbols name in the associated string table */
 	public int getNameIndex() {
 		return name_ndx;
 	}
@@ -172,26 +195,38 @@ public class ElfSymbol {
 		return other;
 	}
 
+	/** @return Returns the index of the section this symbol is associated with */
 	public short getSectionHeaderIndex() {
 		return section_header_ndx;
 	}
-
+	
+	/** @return Returns the file this symbol is associated with */
 	public ElfFile getFile() {
 		return file;
 	}
 
-	/** Returns the binding for this symbol. */
-	public int getBinding() {
-		return info >> 4;
+	/** @return Returns the binding for this symbol. */
+	public Binding getBinding() {
+		return binding;
 	}
 
-	/** Returns the symbol type. */
-	public int getType() {
-		return info & 0x0F;
+	/** @return Returns the symbol type. */
+	public Type getType() {
+		return type;
 	}
 
-	/** Returns the name of the symbol */
+	/** @return Returns the name of the symbol */
 	public String getName() {
-		return file.getSectionHeaders().getStringTable().getString(name_ndx);
+		return table.getStringTable().getString(name_ndx);
+	}
+	
+	/** @return Returns the section associated with this symbol */
+	public ElfSection getSection() {
+		return file.getSectionHeaders().getSectionByIndex(section_header_ndx);
+	}
+	
+	/** @return Returns the section associated with the symbol and insures it is of a certion type c */
+	public ElfSection getSection(Class<? extends ElfSection> c) {
+		return file.getSectionHeaders().getSectionByIndex(section_header_ndx, c);
 	}
 }

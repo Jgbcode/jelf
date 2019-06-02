@@ -2,7 +2,7 @@ package net.fornwall.jelf.section;
 
 import net.fornwall.jelf.ElfException;
 import net.fornwall.jelf.ElfParser;
-import net.fornwall.jelf.sym.ElfSymbol;
+import net.fornwall.jelf.symbol.ElfSymbol;
 
 public class ElfHashTableSection extends ElfSection {
 	private int buckets[];
@@ -41,7 +41,7 @@ public class ElfHashTableSection extends ElfSection {
 	}
 
 	/**
-	 * Gets the {@link ElfSymbol}
+	 * Gets the {@link ElfSymbol} with the specified name
 	 */
 	 public ElfSymbol getSymbol(String symbolName) {
 		 if (symbolName == null) {
@@ -51,7 +51,7 @@ public class ElfHashTableSection extends ElfSection {
 		 // Make sure mod is positive
 		 int index = (int)(((hash(symbolName) % buckets.length) + buckets.length) % buckets.length);
 		 
-		 ElfSymbolTableSection symtab = (ElfSymbolTableSection)super.getFile().getSectionHeaders().getSymbolTable();
+		 ElfSymbolTableSection symtab = getSymbolTable();
 		 
 		 ElfSymbol sym = symtab.getSymbol(index);
 		 while(index != 0 && !sym.getName().equals(symbolName)) {
@@ -60,6 +60,13 @@ public class ElfHashTableSection extends ElfSection {
 		 }
 		 
 		 return sym;
+	 }
+	 
+	 /**
+	  * @return Returns the symbol table associated with this hash table
+	  */
+	 public ElfSymbolTableSection getSymbolTable() {
+		 return (ElfSymbolTableSection)super.getLink(ElfSymbolTableSection.class);
 	 }
 	 
 	 private long hash(String str) {

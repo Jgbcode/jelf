@@ -23,7 +23,7 @@ public class ElfSectionHeaders {
 		this.sections = new ElfSection[h.getSectionHeaderEntryCount()];
 		for (int i = 0; i < sections.length; i++) {
 			long sectionHeaderOffset = h.getSectionHeaderOffset() + (i * h.getSectionHeaderEntrySize());
-			sections[i] = ElfSection.elfSectionFactory(file, sectionHeaderOffset);
+			sections[i] = ElfSection.sectionFactory(file, sectionHeaderOffset);
 		}
 		
 		// Get section string table
@@ -58,6 +58,21 @@ public class ElfSectionHeaders {
 	}
 	
 	/**
+	 * @param c - the section to auto cast to
+	 * @return Returns a section that can be casted to the requested type
+	 * @throws ElfException if the cast is invalid
+	 */
+	public ElfSection getSectionByIndex(int index, Class<? extends ElfSection> c) {
+		ElfSection s = getSectionByIndex(index);
+		if(s == null)
+			return null;
+		
+		if(!c.isInstance(s))
+			throw new ElfException("Invalid section. " + s.getName() + " is not instance of " + c.getCanonicalName());
+		return c.cast(s);
+	}
+	
+	/**
 	 * @return Returns the section with the provided name
 	 */
 	public ElfSection getSectionByName(String name) {
@@ -68,8 +83,9 @@ public class ElfSectionHeaders {
 	}
 	
 	/**
-	 * @param c - the section to auto cast to
+	 * @param c - the section to cast to
 	 * @return Returns a section that can be casted to the requested type
+	 * @throws ElfException if the cast is invalid
 	 */
 	public ElfSection getSectionByName(String name, Class<? extends ElfSection> c) {
 		ElfSection s = getSectionByName(name);

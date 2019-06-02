@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.fornwall.jelf.segment.ElfSegment;
+
 public class ElfHeader {
 	/**
 	 *	Describes the size of the ELF file

@@ -68,7 +68,7 @@ import net.fornwall.jelf.MemoizedObject;
  * DT_HIPROC			0x7fffffff	unspecified	unspecified	unspecified
  * </pre>
  */
-public class ElfDynamicSection {
+public class ElfDynamicSection extends ElfSection {
 
 	public static final int DT_NULL = 0;
 	public static final int DT_NEEDED = 1;
