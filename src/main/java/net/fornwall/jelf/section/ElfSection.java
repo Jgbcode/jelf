@@ -1,19 +1,8 @@
 package net.fornwall.jelf.section;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import net.fornwall.jelf.ElfDynamicStructure;
-import net.fornwall.jelf.ElfException;
 import net.fornwall.jelf.ElfFile;
-import net.fornwall.jelf.ElfHashTable;
 import net.fornwall.jelf.ElfHeader;
-import net.fornwall.jelf.ElfNote;
 import net.fornwall.jelf.ElfParser;
-import net.fornwall.jelf.ElfStringTable;
-import net.fornwall.jelf.ElfSymbol;
-import net.fornwall.jelf.MemoizedObject;
 
 /**
  * Class corresponding to the Elf32_Shdr/Elf64_Shdr struct.
@@ -37,123 +26,103 @@ import net.fornwall.jelf.MemoizedObject;
  * that the actual section index is to be found elsewhere, in a larger field.
  */
 public class ElfSection {
-
-	public enum Type {
+	public static final class Type {
+		private Type() {};
+		
 		/**
 		 * Marks the section header as inactive; it does not have an associated section. Other members of 
 		 * the section header have undefined values.
 		 */
-		NULL(0),
+		public static final int NULL = 0;
 		/** Section holds information defined by the program. */
-		PROGBITS(1),
+		public static final int PROGBITS = 1;
 		/**
 		 * Section holds symbol table information for link editing. It may also be used to store symbols for 
 		 * dynamic linking. Only one per ELF file. The symtab contains everything, but it is non-allocable, 
 		 * can be stripped, and has no runtime cost.
 		 */
-		SYMTAB(2),
+		public static final int SYMTAB = 2;
 		/** Section holds string table information. */
-		STRTAB(3),
+		public static final int STRTAB = 3;
 		/** Section holds relocation entries with explicit addends. */
-		RELA(4),
+		public static final int RELA = 4;
 		/** Section holds symbol hash table. */
-		HASH(5),
+		public static final int HASH = 5;
 		/**
-		 * Section holds information for dynamic linking. Only one per ELF file. The dynsym is allocable, and 
-		 * contains the symbols needed to support runtime operation.
-		 */
-		DYNAMIC(6),
+		* Section holds information for dynamic linking. Only one per ELF file. The dynsym is allocable, and 
+		* contains the symbols needed to support runtime operation.
+		*/
+		public static final int DYNAMIC = 6;
 		/** Section holds information that marks the file. */
-		NOTE(7),
+		public static final int NOTE = 7;
 		/** Section occupies no space but resembles {@link Type#PROGBITS PROGBITS}. */
-		NOBITS(8),
+		public static final int NOBITS = 8;
 		/** Section holds relocation entries without explicit addends. */
-		REL(9),
+		public static final int REL = 9;
 		/** Section is reserved but has unspecified semantics. */
-		SHLIB(10),
+		public static final int SHLIB = 10;
 		/** This section holds a minimal set of symbols adequate for dynamic linking. See also 
-		 * {@link Type#SYMTAB SYMTAB}. Currently, an object file may have either a section of 
-		 * {@link Type#SYMTAB SYMTAB} type or a section of DYNSYM type, but not both. This 
-		 * restriction may be relaxed in the future. */
-		DYNSYM(11),
-		INIT_ARRAY(14),
-		FINI_ARRAY(15),
-		PREINIT_ARRAY(16),
-		GROUP(17),
-		SYMTAB_SHNDX(18),
+		* {@link Type#SYMTAB SYMTAB}. Currently, an object file may have either a section of 
+		* {@link Type#SYMTAB SYMTAB} type or a section of DYNSYM type, but not both. This 
+		* restriction may be relaxed in the future. */
+		public static final int DYNSYM = 11;
+		public static final int INIT_ARRAY = 14;
+		public static final int FINI_ARRAY = 15;
+		public static final int PREINIT_ARRAY = 16;
+		public static final int GROUP = 17;
+		public static final int SYMTAB_SHNDX = 18;
 		/** Lower bound of the range of indexes reserved for operating system-specific semantics. */
-		LOOS(0x60000000),
-		GNU_VERDEF(0x6ffffffd),
-		GNU_VERNEED(0x6ffffffe),
-		GNU_VERSYM(0x6fffffff),
+		public static final int LOOS = 0x60000000;
+		public static final int GNU_VERDEF = 0x6ffffffd;
+		public static final int GNU_VERNEED = 0x6ffffffe;
+		public static final int GNU_VERSYM = 0x6fffffff;
 		/** Upper bound of the range of indexes reserved for operating system-specific semantics. */
-		HIOS(0x6fffffff),
+		public static final int HIOS = 0x6fffffff;
 		/** Lower bound of the range of indexes reserved for processor-specific semantics. */
-		LOPROC(0x70000000),
+		public static final int LOPROC = 0x70000000;
 		/** Upper bound of the range of indexes reserved for processor-specific semantics. */
-		HIPROC(0x7fffffff),
+		public static final int HIPROC = 0x7fffffff;
 		/** Lower bound of the range of indexes reserved for application programs. */
-		LOUSER(0x80000000),
+		public static final int LOUSER = 0x80000000;
 		/** Upper bound of the range of indexes reserved for application programs. */
-		HIUSER(0xffffffff);
-		
-		public final int val;
-		
-		private Type(int val) {
-			this.val = val;
-		}
-		
-		private static Map<Integer, Type> map = new HashMap<Integer, Type>();
-		static {
-			for(Type t : Type.values())
-				map.put(t.val, t);
-		}
-		
-		public static Type fromInt(int val) throws ElfException {
-			Type t = map.get(val);
-			if(t == null)
-				throw new ElfException("Invalid section type: " + val);
-			return t;
-		}
+		public static final int HIUSER = 0xffffffff;
 	}
-
 	
-	/** Flag informing that this section contains data that should be writable during process execution. */
-	public static final int F_WRITE = 0x1;
-	/** Flag informing that section occupies memory during process execution. */
-	public static final int F_ALLOC = 0x2;
-	/** Flag informing that section contains executable machine instructions. */
-	public static final int F_EXECINSTR = 0x4;
-	/** Flag informing that the section might be merged */
-	public static final int F_MERGE = 0x10;
-	/** Flag informing that the section contains null terminated strings */
-	public static final int F_STRINGS = 0x20;
-	/** sh_info contains SHT index */
-	public static final int F_INFO_LINK = 0x40;
-	/** Preserved order after combining */
-	public static final int F_LINK_ORDER = 0x80;
-	/** Non-standard OS specific handing required */
-	public static final int F_OS_NONCONFORMING = 0x100;
-	/** Section is member of a group */
-	public static final int F_GROUP = 0x200;
-	/** Section hold thread-local data */
-	public static final int F_TLS = 0x400;
-	/** OS-Specific mask */
-	public static final int F_MASKOS = 0x0ff00000;
-	/** Flag informing that all the bits in the mask are reserved for processor specific semantics. */
-	public static final int F_MASKPROC = 0xf0000000;
-
-	/** Section header name identifying the section as a string table. */
-	public static final String STRING_TABLE_NAME = ".strtab";
-	/** Section header name identifying the section as a dynamic string table. */
-	public static final String DYNAMIC_STRING_TABLE_NAME = ".dynstr";
-
+	public static final class Flag {
+		private Flag() {};
+		
+		/** Flag informing that this section contains data that should be writable during process execution. */
+		public static final int WRITE = 0x1;
+		/** Flag informing that section occupies memory during process execution. */
+		public static final int ALLOC = 0x2;
+		/** Flag informing that section contains executable machine instructions. */
+		public static final int EXECINSTR = 0x4;
+		/** Flag informing that the section might be merged */
+		public static final int MERGE = 0x10;
+		/** Flag informing that the section contains null terminated strings */
+		public static final int STRINGS = 0x20;
+		/** sh_info contains SHT index */
+		public static final int INFO_LINK = 0x40;
+		/** Preserved order after combining */
+		public static final int LINK_ORDER = 0x80;
+		/** Non-standard OS specific handing required */
+		public static final int OS_NONCONFORMING = 0x100;
+		/** Section is member of a group */
+		public static final int GROUP = 0x200;
+		/** Section hold thread-local data */
+		public static final int TLS = 0x400;
+		/** OS-Specific mask */
+		public static final int MASKOS = 0x0ff00000;
+		/** Flag informing that all the bits in the mask are reserved for processor specific semantics. */
+		public static final int MASKPROC = 0xf0000000;
+		
+	}
 	
 	/** Index into the section header string table which gives the name of the section. */
 	private final int name_ndx; // Elf32_Word or Elf64_Word - 4 bytes in both.
 	
 	/** Section content and semantics. */
-	private final Type type; // Elf32_Word or Elf64_Word - 4 bytes in both.
+	private final int type; // Elf32_Word or Elf64_Word - 4 bytes in both.
 	
 	/** Flags. */
 	private final long flags; // Elf32_Word or Elf64_Xword.
@@ -192,7 +161,7 @@ public class ElfSection {
 		parser.seek(offset);
 
 		name_ndx = parser.readInt();
-		type = Type.fromInt(parser.readInt());
+		type = parser.readInt();
 		flags = parser.readIntOrLong();
 		address = parser.readIntOrLong();
 		section_offset = parser.readIntOrLong();
@@ -222,12 +191,12 @@ public class ElfSection {
 		ElfSection s = new ElfSection(file, offset);
 		
 		switch (s.type) {
-		case SYMTAB:
-		case DYNSYM:
+		case Type.SYMTAB:
+		case Type.DYNSYM:
 			return new ElfSymbolTableSection(s);
-		case STRTAB:
+		case Type.STRTAB:
 			return new ElfStringTableSection(s);
-		case HASH:
+		case Type.HASH:
 //			hashTable = new MemoizedObject<ElfHashTable>() {
 //				@Override
 //				public ElfHashTable computeValue() throws IOException {
@@ -235,7 +204,7 @@ public class ElfSection {
 //				}
 //			};
 			break;
-		case DYNAMIC:
+		case Type.DYNAMIC:
 //			dynamicStructure = new MemoizedObject<ElfDynamicStructure>() {
 //				@Override
 //				protected ElfDynamicStructure computeValue() throws ElfException, IOException {
@@ -243,7 +212,7 @@ public class ElfSection {
 //				}
 //			};
 			break;
-		case NOTE:
+		case Type.NOTE:
 //		    note = new MemoizedObject<ElfNote>() {
 //                @Override
 //                protected ElfNote computeValue() throws ElfException, IOException {
@@ -267,7 +236,7 @@ public class ElfSection {
 	/**
 	 * @return Returns the type of this section, see {@link Type Type}
 	 */
-	public Type getType() {
+	public int getType() {
 		return type;
 	}
 
@@ -352,10 +321,5 @@ public class ElfSection {
 	 */
 	public ElfSection getLink() {
 		return file.getSectionHeaders().getSectionByIndex(link);
-	}
-
-	@Override
-	public String toString() {
-		return "ElfSectionHeader[name=" + getName() + ", type=" + type.name() + "]";
 	}
 }

@@ -37,7 +37,7 @@ public class ElfParser {
 	    	if (fsFile.skip(offset) != offset) throw new ElfException("seeking outside file");
         }
         else if (mappedByteBuffer != null) {
-            mappedByteBuffer.position((int)(mbbStartPosition + offset)); // we may be limited to sub-4GB mapped filess
+            mappedByteBuffer.position((int)(mbbStartPosition + offset)); // we may be limited to sub-4GB mapped files
         }
 	}
 

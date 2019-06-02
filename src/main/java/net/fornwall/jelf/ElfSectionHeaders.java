@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import net.fornwall.jelf.section.ElfSection;
 import net.fornwall.jelf.section.ElfStringTableSection;
+import net.fornwall.jelf.section.ElfSymbolTableSection;
 
 public class ElfSectionHeaders {
 	private ElfFile file;
@@ -11,6 +12,9 @@ public class ElfSectionHeaders {
 	
 	// String to section index
 	private HashMap<String, Integer> sectionByName;
+	
+	// Special section
+	private ElfStringTableSection sectionStringTable;
 	
 	public ElfSectionHeaders(ElfFile file) {
 		this.file = file;
@@ -22,14 +26,26 @@ public class ElfSectionHeaders {
 			sections[i] = ElfSection.elfSectionFactory(file, sectionHeaderOffset);
 		}
 		
+		// Get section string table
 		if(!(sections[h.getSectionHeaderStringTableIndex()] instanceof ElfStringTableSection))
 			throw new ElfException("Invalid section header string table");
 		
-		ElfStringTableSection strTab = (ElfStringTableSection)sections[h.getSectionHeaderStringTableIndex()];
+		sectionStringTable = (ElfStringTableSection)sections[h.getSectionHeaderStringTableIndex()];
 		
 		sectionByName = new HashMap<String, Integer>();
-		for(int i = 0; i < sections.length; i++)
-			sectionByName.put(strTab.getString(sections[i].getNameIndex()), i);
+		for(int i = 0; i < sections.length; i++) {
+			if(sectionByName.put(sectionStringTable.getString(sections[i].getNameIndex()), i) != null) {
+				throw new ElfException("Duplicate section entry: " + 
+						sectionStringTable.getString(sections[i].getNameIndex()));
+			}
+		}
+	}
+	
+	/**
+	 * @return Returns the file these section headers are related to
+	 */
+	public ElfFile getFile() {
+		return this.file;
 	}
 	
 	/**
@@ -52,16 +68,46 @@ public class ElfSectionHeaders {
 	}
 	
 	/**
+	 * @param c - the section to auto cast to
+	 * @return Returns a section that can be casted to the requested type
+	 */
+	public ElfSection getSectionByName(String name, Class<? extends ElfSection> c) {
+		ElfSection s = getSectionByName(name);
+		if(s == null)
+			return null;
+		
+		if(!c.isInstance(s))
+			throw new ElfException("Invalid section. " + name + " is not instance of " + c.getCanonicalName());
+		return c.cast(s);
+	}
+	
+	/**
 	 * @return Returns the index of the requested section or null if it does not exist
 	 */
 	public Integer getSectionIndexByName(String name) {
 		return sectionByName.get(name);
 	}
 	
+	// Special section getters
+	
 	/**
-	 * @return Returns the string table that holds the names for all sections
+	 * @return Returns the string table which contains section names
 	 */
-	public ElfStringTableSection getNameStringTableSection() {
-		return (ElfStringTableSection)getSectionByIndex(file.getHeader().getSectionHeaderStringTableIndex());
+	public ElfStringTableSection getSectionStringTable() {
+		return sectionStringTable;
+	}
+	
+	/**
+	 * @return Returns the main string table
+	 */
+	public ElfStringTableSection getStringTable() {
+		return (ElfStringTableSection)this.getSectionByName(".strtab", ElfStringTableSection.class);
+	}
+	
+	/**
+	 * @return Returns the main symbol table
+	 */
+	public ElfSymbolTableSection getSymbolTable() {
+		return (ElfSymbolTableSection)this.getSectionByName(".symtab", ElfSymbolTableSection.class);
 	}
 }

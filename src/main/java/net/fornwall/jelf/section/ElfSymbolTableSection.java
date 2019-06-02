@@ -1,7 +1,7 @@
 package net.fornwall.jelf.section;
 
 import net.fornwall.jelf.ElfException;
-import net.fornwall.jelf.ElfSymbol;
+import net.fornwall.jelf.sym.ElfSymbol;
 
 public class ElfSymbolTableSection extends ElfSection {
 	private ElfSymbol[] symbols;
@@ -13,8 +13,7 @@ public class ElfSymbolTableSection extends ElfSection {
 		symbols = new ElfSymbol[num_entries];
 		for (int i = 0; i < num_entries; i++) {
 			final long symbolOffset = super.getFileOffset() + (i * super.getEntrySize());
-			symbols[i] = new ElfSymbol(ElfSymbolTableSection.super.getFile(), symbolOffset, 
-					ElfSymbolTableSection.super.getType());
+			symbols[i] = ElfSymbol.symbolFactory(ElfSymbolTableSection.super.getFile(), symbolOffset);
 		}
 	}
 	

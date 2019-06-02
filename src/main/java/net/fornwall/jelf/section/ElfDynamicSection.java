@@ -1,8 +1,13 @@
-package net.fornwall.jelf;
+package net.fornwall.jelf.section;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import net.fornwall.jelf.ElfException;
+import net.fornwall.jelf.ElfFile;
+import net.fornwall.jelf.ElfParser;
+import net.fornwall.jelf.MemoizedObject;
 
 /**
  * http://www.sco.com/developers/gabi/latest/ch5.dynamic.html#dynamic_section
@@ -63,7 +68,7 @@ import java.util.List;
  * DT_HIPROC			0x7fffffff	unspecified	unspecified	unspecified
  * </pre>
  */
-public class ElfDynamicStructure {
+public class ElfDynamicSection {
 
 	public static final int DT_NULL = 0;
 	public static final int DT_NEEDED = 1;
@@ -140,7 +145,7 @@ public class ElfDynamicStructure {
 		}
 	}
 
-	public ElfDynamicStructure(final ElfFile file, long offset, int size) {
+	public ElfDynamicSection(final ElfFile file, long offset, int size) {
 		ElfParser parser = file.parser;
 		
 		parser.seek(offset);

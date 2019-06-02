@@ -2,7 +2,7 @@ package net.fornwall.jelf.section;
 
 import net.fornwall.jelf.ElfException;
 import net.fornwall.jelf.ElfParser;
-import net.fornwall.jelf.ElfSymbol;
+import net.fornwall.jelf.sym.ElfSymbol;
 
 public class ElfHashTableSection extends ElfSection {
 	private int buckets[];
@@ -11,7 +11,7 @@ public class ElfHashTableSection extends ElfSection {
 	protected ElfHashTableSection(ElfSection s) {
 		super(s);
 		
-		ElfParser parser = s.getFile().parser;
+		ElfParser parser = s.getFile().getParser();
 		long offset = s.getFileOffset();
 		long length = s.getSize();
 		
@@ -41,37 +41,39 @@ public class ElfHashTableSection extends ElfSection {
 	}
 
 	/**
-	 * This method doesn't work every time and is unreliable. Use ELFSection.getELFSymbol(String) to retrieve symbols by
-	 * name. NOTE: since this method is currently broken it will always return null.
+	 * Gets the {@link ElfSymbol}
 	 */
 	 public ElfSymbol getSymbol(String symbolName) {
 		 if (symbolName == null) {
 			 return null;
 		 }
-		
+		 
+		 // Make sure mod is positive
+		 int index = (int)(((hash(symbolName) % buckets.length) + buckets.length) % buckets.length);
+		 
+		 ElfSymbolTableSection symtab = (ElfSymbolTableSection)super.getFile().getSectionHeaders().getSymbolTable();
+		 
+		 ElfSymbol sym = symtab.getSymbol(index);
+		 while(index != 0 && !sym.getName().equals(symbolName)) {
+			 index = chains[index];
+			 sym = symtab.getSymbol(index);
+		 }
+		 
+		 return sym;
+	 }
+	 
+	 private long hash(String str) {
 		 long hash = 0;
 		 long g = 0;
 		
-		 for (int i = 0; i < symbolName.length(); i++) {
-			 hash = (hash << 4) + symbolName.charAt(i);
+		 for (int i = 0; i < str.length(); i++) {
+			 hash = (hash << 4) + str.charAt(i);
 			 if ((g = hash & 0xf0000000) != 0) {
 				 hash ^= g >>> 24;
 			 }
-		 	hash &= ~g;
+			 hash &= ~g;
 		 }
 		 
-		 ElfSymbol symbol = null;
-		 ElfSection dyn_sh = getHeader().getDynamicSymbolTableSection();
-		 int index = (int)hash % num_buckets;
-		 while(index != 0) {
-		 symbol = dyn_sh.getELFSymbol(index);
-		 if (symbolName.equals(symbol.getName())) {
-		 break;
-		 }
-		 	symbol = null;
-		 	index = chains[index];
-		 }
-		 return symbol;
-		 return null;
+		 return hash;
 	 }
 }

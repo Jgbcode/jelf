@@ -7,6 +7,7 @@ import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
 
+import net.fornwall.jelf.section.ElfDynamicSection;
 import net.fornwall.jelf.section.ElfSection;
 
 public class BasicTest {
@@ -18,7 +19,7 @@ public class BasicTest {
 	private static void assertSectionNames(ElfFile file, String... expectedSectionNames) throws IOException {
 		for (int i = 0; i < expectedSectionNames.length; i++) {
 			String expected = expectedSectionNames[i];
-			String actual = file.getSection(i).getName();
+			String actual = file.getSectionHeaders().getSectionByIndex(i).getName();
 			if (expected == null) {
 				Assert.assertNull(actual);
 			} else {
@@ -30,18 +31,18 @@ public class BasicTest {
 	@Test
 	public void testAndroidArmBinTset() throws ElfException, FileNotFoundException, IOException {
 		ElfFile file = parseFile("android_arm_tset");
-		ElfHeader h = file.header;
+		ElfHeader h = file.getHeader();
 		
-		Assert.assertEquals(ElfHeader.BitClass.ELFCLASS32, h.ei_class);
-		Assert.assertEquals(ElfHeader.Data.ELFDATA2LSB, h.ei_data);
-		Assert.assertEquals(ElfHeader.Type.EXEC, h.e_type);
-		Assert.assertEquals(ElfHeader.Machine.ARM, h.e_machine);
-		Assert.assertEquals(32, h.e_phentsize);
-		Assert.assertEquals(7, h.e_phnum);
-		Assert.assertEquals(52, h.e_phoff);
-		Assert.assertEquals(40, h.e_shentsize);
-		Assert.assertEquals(25, h.e_shnum);
-		Assert.assertEquals(15856, h.e_shoff);
+		Assert.assertEquals(ElfHeader.BitClass.ELFCLASS32, h.getBitClass());
+		Assert.assertEquals(ElfHeader.DataFormat.ELFDATA2LSB, h.getDataFormat());
+		Assert.assertEquals(ElfHeader.FileType.EXEC, h.getFileType());
+		Assert.assertEquals(ElfHeader.Machine.ARM, h.getMachine());
+		Assert.assertEquals(32, h.getProgramHeaderEntrySize());
+		Assert.assertEquals(7, h.getProgramHeaderEntryCount());
+		Assert.assertEquals(52, h.getProgramHeaderOffset());
+		Assert.assertEquals(40, h.getSectionHeaderEntrySize());
+		Assert.assertEquals(25, h.getSectionHeaderEntryCount());
+		Assert.assertEquals(15856, h.getSectionHeaderOffset());
 		assertSectionNames(file, null, ".interp", ".dynsym", ".dynstr", ".hash", ".rel.dyn", ".rel.plt", ".plt", ".text");
 
 		ElfSection dynamic = file.getDynamicLinkSection();
@@ -56,7 +57,7 @@ public class BasicTest {
 		Assert.assertEquals(8, dynamic.entry_size);
 		Assert.assertEquals(248, dynamic.size);
 
-		ElfDynamicStructure ds = dynamic.getDynamicSection();
+		ElfDynamicSection ds = dynamic.getDynamicSection();
 		Assert.assertEquals(Arrays.asList("libncursesw.so.6", "libc.so", "libdl.so"), ds.getNeededLibraries());
 
 		Assert.assertEquals("/system/bin/linker", file.getInterpreter());
@@ -89,13 +90,13 @@ public class BasicTest {
 		// 0x0000001e (FLAGS) BIND_NOW
 		// 0x6ffffffb (FLAGS_1) Flags: NOW
 		// 0x00000000 (NULL) 0x0
-		ElfDynamicStructure dynamicStructure = file.getDynamicLinkSection().getDynamicSection();
+		ElfDynamicSection dynamicStructure = file.getDynamicLinkSection().getDynamicSection();
 		Assert.assertEquals(26, dynamicStructure.entries.size());
-		Assert.assertEquals(new ElfDynamicStructure.ElfDynamicSectionEntry(3, 0xbf44), dynamicStructure.entries.get(0));
-		Assert.assertEquals(new ElfDynamicStructure.ElfDynamicSectionEntry(2, 352), dynamicStructure.entries.get(1));
-		Assert.assertEquals(new ElfDynamicStructure.ElfDynamicSectionEntry(0x17, 0x8868), dynamicStructure.entries.get(2));
-		Assert.assertEquals(new ElfDynamicStructure.ElfDynamicSectionEntry(0x6ffffffb, 1), dynamicStructure.entries.get(24));
-		Assert.assertEquals(new ElfDynamicStructure.ElfDynamicSectionEntry(0, 0), dynamicStructure.entries.get(25));
+		Assert.assertEquals(new ElfDynamicSection.ElfDynamicSectionEntry(3, 0xbf44), dynamicStructure.entries.get(0));
+		Assert.assertEquals(new ElfDynamicSection.ElfDynamicSectionEntry(2, 352), dynamicStructure.entries.get(1));
+		Assert.assertEquals(new ElfDynamicSection.ElfDynamicSectionEntry(0x17, 0x8868), dynamicStructure.entries.get(2));
+		Assert.assertEquals(new ElfDynamicSection.ElfDynamicSectionEntry(0x6ffffffb, 1), dynamicStructure.entries.get(24));
+		Assert.assertEquals(new ElfDynamicSection.ElfDynamicSectionEntry(0, 0), dynamicStructure.entries.get(25));
 	}
 
 	@Test
@@ -127,7 +128,7 @@ public class BasicTest {
 		Assert.assertEquals(119544, h.e_shoff);
 		assertSectionNames(file, null, ".interp", ".note.ABI-tag", ".note.gnu.build-id", ".gnu.hash", ".dynsym");
 
-		ElfDynamicStructure ds = file.getDynamicLinkSection().getDynamicSection();
+		ElfDynamicSection ds = file.getDynamicLinkSection().getDynamicSection();
 		Assert.assertEquals(Arrays.asList("libc.so.6"), ds.getNeededLibraries());
 
 		Assert.assertEquals("/lib64/ld-linux-x86-64.so.2", file.getInterpreter());
