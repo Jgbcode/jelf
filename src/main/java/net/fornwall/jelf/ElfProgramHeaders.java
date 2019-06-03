@@ -14,4 +14,21 @@ public class ElfProgramHeaders {
 			segments[i] = ElfSegment.segmentFactory(file, programHeaderOffset);
 		}
 	}
+	
+	/**
+	 * @return Returns the number of segments
+	 */
+	public int size() {
+		return segments.length;
+	}
+	
+	/**
+	 * @param index the index of the segment to fetch
+	 * @return Returns the requested segment
+	 */
+	public ElfSegment getSegmentByIndex(int index) {
+		if(index < 0 || index >= segments.length)
+			throw new ElfException("Segment index out of bounds: " + index);
+		return segments[index];
+	}
 }

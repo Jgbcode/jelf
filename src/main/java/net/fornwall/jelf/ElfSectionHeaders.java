@@ -1,6 +1,8 @@
 package net.fornwall.jelf;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import net.fornwall.jelf.section.ElfSection;
 import net.fornwall.jelf.section.ElfStringTableSection;
@@ -39,6 +41,13 @@ public class ElfSectionHeaders {
 						sectionStringTable.getString(sections[i].getNameIndex()));
 			}
 		}
+	}
+	
+	/**
+	 * @return Returns the number of sections
+	 */
+	public int size() {
+		return sections.length;
 	}
 	
 	/**
@@ -125,5 +134,70 @@ public class ElfSectionHeaders {
 	 */
 	public ElfSymbolTableSection getSymbolTable() {
 		return (ElfSymbolTableSection)this.getSectionByName(".symtab", ElfSymbolTableSection.class);
+	}
+	
+	
+	
+	/**
+	 * @param offset the offset in the file
+	 * @return Returns the section which contains the byte located at this specific offset
+	 */
+	public ElfSection getSectionAtOffset(long offset) {
+		return sections[getSectionIndexAtOffset(offset)];
+	}
+	
+	/**
+	 * @param offset offset the offset in the file
+	 * @return Returns the index of the section which contains the byte located at this specific offset
+	 */
+	public int getSectionIndexAtOffset(long offset) {
+		return getSectionIndexAtOffset(offset, 0, sections.length);
+	}
+	
+	// Helper
+	private int getSectionIndexAtOffset(long offset, int start, int end) {
+		// Assumes sections are ordered according to file offset in this.sections
+		if(start >= end) {
+			// Check for NULL section
+			if(offset >= 0 && sections.length > 1 && offset < sections[1].getFileOffset())
+				return 0;
+			
+			throw new ElfException("No section found at offset " + offset);
+		}
+		
+		int mid = (start + end) / 2;
+		ElfSection s = sections[mid];
+		if(offset >= s.getFileOffset() && offset < s.getFileOffset() + s.getFileSize())
+			return mid;
+		else if(offset < s.getFileOffset())
+			return getSectionIndexAtOffset(offset, start, mid);
+		else
+			return getSectionIndexAtOffset(offset, mid + 1, end);
+	}
+	
+	/**
+	 * @param c the type of section to fetch
+	 * @return Returns a list of sections that are an instance of the provided class
+	 */
+	public List<ElfSection> getSectionsOfType(Class<? extends ElfSection> c) {
+		List<ElfSection> result = new ArrayList<ElfSection>();
+		for(ElfSection s : sections) {
+			if(c.isInstance(s))
+				result.add(s);
+		}
+		return result;
+	}
+	
+	/**
+	 * @param t the type of the section to fetch
+	 * @return Returns a list of sections that are of the provided type
+	 */
+	public List<ElfSection> getSectionsOfType(ElfSection.Type t) {
+		List<ElfSection> result = new ArrayList<ElfSection>();
+		for(ElfSection s : sections) {
+			if(s.getType().equals(t))
+				result.add(s);
+		}
+		return result;
 	}
 }

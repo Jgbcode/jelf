@@ -13,7 +13,7 @@ public class ElfHashTableSection extends ElfSection {
 		
 		ElfParser parser = s.getFile().getParser();
 		long offset = s.getFileOffset();
-		long length = s.getSize();
+		long length = s.getFileSize();
 		
 		parser.seek(offset);
 		int num_buckets = parser.readInt();

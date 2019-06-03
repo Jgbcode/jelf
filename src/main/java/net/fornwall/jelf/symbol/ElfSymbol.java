@@ -1,5 +1,6 @@
 package net.fornwall.jelf.symbol;
 
+import net.fornwall.jelf.ElfException;
 import net.fornwall.jelf.ElfFile;
 import net.fornwall.jelf.ElfHeader;
 import net.fornwall.jelf.ElfParser;
@@ -11,15 +12,23 @@ import net.fornwall.jelf.section.ElfSymbolTableSection;
  */
 public class ElfSymbol {
 	public static final class Binding {
-		/** Binding specifying that local symbols are not visible outside the object file that contains its definition. */
+		/** STB_LOCAL: Binding specifying that local symbols are not visible outside the object file that contains its definition. */
 		public static final int LOCAL = 0;
-		/** Binding specifying that global symbols are visible to all object files being combined. */
+		/** STB_GLOBAL: Binding specifying that global symbols are visible to all object files being combined. */
 		public static final int GLOBAL = 1;
-		/** Binding specifying that the symbol resembles a global symbol, but has a lower precedence. */
+		/** STB_WEAK: Binding specifying that the symbol resembles a global symbol, but has a lower precedence. */
 		public static final int WEAK = 2;
-		/** Lower bound binding values reserved for processor specific semantics. */
+		/** STB_NUM: Number of defined types.  */
+		public static final int NUM = 3;
+		/** STB_LOOS: Start of OS-specific */
+		public static final int LOOS = 10;
+		/** STB_GNU_UNIQUE: Unique symbol.  */
+		public static final int GNU_UNIQUE = 10;
+		/** STB_HIOS: End of OS-specific */
+		public static final int HIOS = 12;
+		/** STB_LOPROC: Lower bound binding values reserved for processor specific semantics. */
 		public static final int LOPROC = 13;
-		/** Upper bound binding values reserved for processor specific semantics. */
+		/** STB_HIPROC: Upper bound binding values reserved for processor specific semantics. */
 		public static final int HIPROC = 15;
 		
 		public final int val;
@@ -36,40 +45,50 @@ public class ElfSymbol {
 				return "GLOBAL";
 			case WEAK:
 				return "WEAK";
+			case NUM:
+				return "NUM";
+			case GNU_UNIQUE:
+				return "GNU_UNIQUE";
 			default:
+				if(val >= LOOS && val <= HIOS)
+					return "OS";
 				if(val >= LOPROC && val <= HIPROC)
-					return "PROC_RESERVED";
+					return "PROC";
 				return "?";
 			}
 		}
 	}
 
 	public static final class Type {
-		/** Type specifying that the symbol is unspecified. */
+		/** STT_NOTYPE: Type specifying that the symbol is unspecified. */
 		public static final byte NOTYPE = 0;
-		/** Type specifying that the symbol is associated with an object. */
+		/** STT_OBJECT: Type specifying that the symbol is associated with an object. */
 		public static final byte OBJECT = 1;
-		/** Type specifying that the symbol is associated with a function or other executable code. */
+		/** STT_FUNC: Type specifying that the symbol is associated with a function or other executable code. */
 		public static final byte FUNC = 2;
 		/**
+		 * STT_SECTION:
 		 * Type specifying that the symbol is associated with a section. Symbol table entries of this type exist for
 		 * relocation and normally have the binding BINDING_LOCAL.
 		 */
 		public static final byte SECTION = 3;
-		/** Type defining that the symbol is associated with a file. */
+		/** STT_FILE: Type defining that the symbol is associated with a file. */
 		public static final byte FILE = 4;
-		/** The symbol labels an uninitialized common block. */
-		public static final byte OMMON = 5;
-		/** The symbol specifies a Thread-Local Storage entity. */
+		/** STT_COMMON: The symbol labels an uninitialized common block. */
+		public static final byte COMMON = 5;
+		/** STT_TLS: The symbol specifies a Thread-Local Storage entity. */
 		public static final byte TLS = 6;
-	
-		/** Lower bound for range reserved for operating system-specific semantics. */
+		/** STT_NUM: Number of defined types.  */
+		public static final byte NUM = 7;
+		/** STT_LOOS: Lower bound for range reserved for operating system-specific semantics. */
 		public static final byte LOOS = 10;
-		/** Upper bound for range reserved for operating system-specific semantics. */
+		/** STT_GNU_IFUNC: Symbol is indirect code object */
+		public static final byte GNU_IFUNC = 10;
+		/** STT_HIOS: Upper bound for range reserved for operating system-specific semantics. */
 		public static final byte HIOS = 12;
-		/** Lower bound for range reserved for processor-specific semantics. */
+		/** STT_LOPROC: Lower bound for range reserved for processor-specific semantics. */
 		public static final byte LOPROC = 13;
-		/** Upper bound for range reserved for processor-specific semantics. */
+		/** STT_HIPROC: Upper bound for range reserved for processor-specific semantics. */
 		public static final byte HIPROC = 15;
 		
 		public final int val;
@@ -90,11 +109,128 @@ public class ElfSymbol {
 				return "SECTION";
 			case FILE:
 				return "FILE";
+			case COMMON:
+				return "COMMON";
+			case TLS:
+				return "TLS";
+			case NUM:
+				return "NUM";
+			case GNU_IFUNC:
+				return "GNU_IFUNC";
 			default:
+				if(val >= LOOS && val <= HIOS)
+					return "OS";
 				if(val >= LOPROC && val <= HIPROC)
-					return "PROC_RESERVED";
+					return "PROC";
 				return "?";
 			}
+		}
+	}
+	
+	/**
+	 * Encodes symbol visibility
+	 */
+	public static final class Other {
+		/** STV_DEFAULT: Default symbol visibility rules */
+		public static final short DEFAULT = 0;
+		/** STV_INTERAL: Processor specific hidden class */
+		public static final short INTERNAL = 1;
+		/** STV_HIDDEN: Sym unavailable in other modules */
+		public static final short HIDDEN = 2;
+		/** STV_PROTECTED: Not preemptible, not exported */
+		public static final short PROTECTED = 3;
+		
+		public final short val;
+		
+		public Other(short val) {
+			this.val = val;
+		}
+		
+		/**
+		 * @return Returns a human readable name of what this encodes
+		 */
+		public String name() {
+			switch(val) {
+			case DEFAULT:
+				return "DEFAULT";
+			case INTERNAL:
+				return "INTERNAL";
+			case HIDDEN:
+				return "HIDDEN";
+			case PROTECTED:
+				return "PROTECTED";
+			default:
+				return "?";
+			}
+		}
+	}
+	
+	public static class SectionIndex {
+		/** SHN_UNDEF: Undefined section */
+		public static final short UNDEF = 0;
+		/** SHN_LORESERVE: Start of reserved indices */
+		public static final short LORESERVE = (short)0xff00;
+		/** SHN_LOPROC: Start of processor-specific */
+		public static final short LOPROC = (short)0xff00;
+		/** SHN_BEFORE: Order section before all others (Solaris).  */
+		public static final short BEFORE = (short)0xff00;
+		/** SHN_AFTER: Order section after all others (Solaris).  */
+		public static final short AFTER = (short)0xff01;
+		/** SHN_HIPROC: End of processor-specific */
+		public static final short HIPROC = (short)0xff1f;
+		/** SHN_LOOS: Start of OS-specific */
+		public static final short LOOS = (short)0xff20;
+		/** SHN_HIOS: End of OS-specific */
+		public static final short HIOS = (short)0xff3f;
+		/** SHN_ABS: Associated symbol is absolute */
+		public static final short ABS = (short)0xfff1;
+		/** SHN_COMMON: Associated symbol is common */
+		public static final short COMMON = (short)0xfff2;
+		/** SHN_XINDEX: Index is in extra table.  */
+		public static final short XINDEX = (short)0xffff;
+		/** SHN_HIRESERVE: End of reserved indices */
+		public static final short HIRESERVE = (short)0xffff;
+		
+		public final short val;
+		
+		public SectionIndex(short val) {
+			this.val = val;
+		}
+		
+		/**
+		 * @return Returns the name of this symbol index if it has a special
+		 *  value. Otherwise, the index is returned as a string encoded integer.
+		 */
+		public String name() {
+			switch(val) {
+			case UNDEF:
+				return "UNDEF";
+			case BEFORE:
+				return "BEFORE";
+			case AFTER:
+				return "AFTER";
+			case ABS:
+				return "ABS";
+			case COMMON:
+				return "COMMON";
+			case XINDEX:
+				return "XINDEX";
+			default:
+				if(val >= LOPROC && val <= HIPROC)
+					return "PROC";
+				if(val >= LOOS && val <= HIOS)
+					return "OS";
+				if(val >= LORESERVE && val <= HIRESERVE)
+					return "RESERVED";
+				return Short.toString(val);
+			}
+		}
+		
+		/**
+		 * @return Returns true if this index is not standard
+		 */
+		public boolean isReserved() {
+			return val >= LORESERVE && val <= HIRESERVE;
 		}
 	}
 		
@@ -109,13 +245,13 @@ public class ElfSymbol {
 	private final long size; // Elf32_Word
 	/** Specifies the symbol type and binding attributes. */
 	private final short info; // unsigned char
-	/** Currently holds the value of 0 and has no meaning. */
-	private final short other; // unsigned char
+	/** Currently holds visibility information */
+	private final Other other; // unsigned char
 	/**
 	 * Index to the associated section header. This value will need to be read as an unsigned short if we compare it to
 	 * ELFSectionHeader.NDX_LORESERVE and ELFSectionHeader.NDX_HIRESERVE.
 	 */
-	private final short section_header_ndx; // Elf32_Half
+	private final SectionIndex section_header_ndx; // Elf32_Half
 	
 	// Calculated values
 	private final Binding binding;
@@ -136,13 +272,13 @@ public class ElfSymbol {
 			value = parser.readInt();
 			size = parser.readInt();
 			info = parser.readUnsignedByte();
-			other = parser.readUnsignedByte();
-			section_header_ndx = parser.readShort();
+			other = new Other(parser.readUnsignedByte());
+			section_header_ndx = new SectionIndex(parser.readShort());
 		} else {
 			name_ndx = parser.readInt();
 			info = parser.readUnsignedByte();
-			other = parser.readUnsignedByte();
-			section_header_ndx = parser.readShort();
+			other = new Other(parser.readUnsignedByte());
+			section_header_ndx = new SectionIndex(parser.readShort());
 			value = parser.readLong();
 			size = parser.readLong();
 		}
@@ -191,12 +327,12 @@ public class ElfSymbol {
 		return info;
 	}
 
-	public short getOther() {
+	public Other getOther() {
 		return other;
 	}
 
 	/** @return Returns the index of the section this symbol is associated with */
-	public short getSectionHeaderIndex() {
+	public SectionIndex getSectionHeaderIndex() {
 		return section_header_ndx;
 	}
 	
@@ -222,11 +358,15 @@ public class ElfSymbol {
 	
 	/** @return Returns the section associated with this symbol */
 	public ElfSection getSection() {
-		return file.getSectionHeaders().getSectionByIndex(section_header_ndx);
+		if(section_header_ndx.isReserved())
+			throw new ElfException("Attempting to access reserved section: " + section_header_ndx.name());
+		return file.getSectionHeaders().getSectionByIndex(section_header_ndx.val);
 	}
 	
 	/** @return Returns the section associated with the symbol and insures it is of a certion type c */
 	public ElfSection getSection(Class<? extends ElfSection> c) {
-		return file.getSectionHeaders().getSectionByIndex(section_header_ndx, c);
+		if(section_header_ndx.isReserved())
+			throw new ElfException("Attempting to access reserved section: " + section_header_ndx.name());
+		return file.getSectionHeaders().getSectionByIndex(section_header_ndx.val, c);
 	}
 }
