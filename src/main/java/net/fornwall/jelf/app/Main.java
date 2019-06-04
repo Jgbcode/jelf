@@ -382,7 +382,7 @@ public class Main {
 			t.setAlign(Align.LEFT);
 			
 			t.addCell("SymValue");
-			t.setAlign(Align.LEFT);
+			t.setAlign(Align.RIGHT);
 			
 			t.addCell("SymName");
 			t.setAlign(Align.LEFT);

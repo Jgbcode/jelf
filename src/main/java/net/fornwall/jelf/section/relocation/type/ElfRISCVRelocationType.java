@@ -35,7 +35,7 @@ public class ElfRISCVRelocationType extends ElfRelocation.Type {
 	
 	@Override
 	public String name() {
-		switch(val) {
+		switch(super.val) {
 		case RISCV_NONE:
 			return "RISCV_NONE";
 		case RISCV_32:

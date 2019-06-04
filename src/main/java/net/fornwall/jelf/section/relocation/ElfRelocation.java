@@ -73,18 +73,21 @@ public class ElfRelocation {
 	
 	public static ElfRelocation relocationFactory(ElfFile file, ElfRelocationSection table, long offset) {
 		Class<? extends Type> type;
+		
+		// Register type
 		switch(file.getHeader().getMachine()) {
 		case RISCV:
 			type = ElfRISCVRelocationType.class;
+			break;
 		default:
 			type = Type.class;
 		}
 		
 		if(table.getType().val == ElfSection.Type.REL) {
-			return new ElfRelocation(file, table, offset, Type.class);
+			return new ElfRelocation(file, table, offset, type);
 		}
 		else if(table.getType().val == ElfSection.Type.RELA) {
-			return new ElfAddendRelocation(file, table, offset, Type.class);
+			return new ElfAddendRelocation(file, table, offset, type);
 		}
 		else {
 			throw new ElfException("Unknown relocation type: " + table.getType().name());
