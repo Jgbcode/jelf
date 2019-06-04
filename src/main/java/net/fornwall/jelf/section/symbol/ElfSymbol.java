@@ -1,4 +1,4 @@
-package net.fornwall.jelf.symbol;
+package net.fornwall.jelf.section.symbol;
 
 import net.fornwall.jelf.ElfException;
 import net.fornwall.jelf.ElfFile;
@@ -310,23 +310,54 @@ public class ElfSymbol {
 		return s;
 	}
 	
-	/** @return Gets the index of this symbols name in the associated string table */
+	/** 
+	 * This member holds an index into the object file’s symbol string table, which holds the
+	 * character representations of the symbol names. If the value is non-zero, it represents a
+	 * string table index that gives the symbol name. Otherwise, the symbol table entry has no
+	 * name
+	 * 
+	 * @return Gets the index of this symbols name in the associated string table 
+	 */
 	public int getNameIndex() {
 		return name_ndx;
 	}
 
+	/**
+	 * This member gives the value of the associated symbol. Depending on the context, this
+	 * may be an absolute value, an address, etc
+	 * 
+	 * @return Returns the value associated with this symbol
+	 */
 	public long getValue() {
 		return value;
 	}
 
+	/**
+	 * Many symbols have associated sizes. For example, a data object’s size is the number of
+	 * bytes contained in the object. This member holds 0 if the symbol has no size or an
+	 * unknown size.
+	 * 
+	 * @return Returns the associated size of this symbol
+	 */
 	public long getSize() {
 		return size;
 	}
 
+	/**
+	 * This member specifies the symbol’s type and binding attributes. See {@link #getBinding} and
+	 * 	{@link #getType} for methods which further parse this attribute
+	 * 
+	 * @return Returns the info associated with this symbol
+	 */
 	public short getInfo() {
 		return info;
 	}
 
+	/**
+	 * See {@link Other}
+	 * 
+	 * @return Returns the other attribute associated with this symbol
+	 */
 	public Other getOther() {
 		return other;
 	}

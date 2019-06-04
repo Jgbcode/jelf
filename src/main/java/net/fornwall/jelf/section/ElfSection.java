@@ -334,7 +334,7 @@ public class ElfSection {
 	private ElfSection(final ElfFile file, long offset) {
 		this.file = file;
 		ElfParser parser = file.getParser();
-	
+		
 		parser.seek(offset);
 
 		name_ndx = parser.readInt();
@@ -386,6 +386,9 @@ public class ElfSection {
 	}
 	
 	/**
+	 * This member specifies the name of the section. Its value is an index into the section
+	 * header string table section
+	 * 
 	 * @return Returns an index to the string in the .shstrtab section which
 	 * 	holds the name of this section
 	 */
@@ -394,13 +397,17 @@ public class ElfSection {
 	}
 
 	/**
-	 * @return Returns the type of this section, see {@link Type Type}
+	 * This member categorizes the section’s contents and semantics, see {@link Type}
+	 * 
+	 * @return Returns the type of this section
 	 */
 	public Type getType() {
 		return type;
 	}
 
 	/**
+	 * Sections support 1-bit flags that describe miscellaneous attributes, see {@link Flag}
+	 * 
 	 * @return Returns the flags of this section, 
 	 */
 	public Flag getFlags() {
@@ -408,6 +415,9 @@ public class ElfSection {
 	}
 
 	/**
+	 * If the section will appear in the memory image of a process, this member gives the
+	 * address at which the section’s first byte should reside. Otherwise, the member contains 0
+	 * 
 	 * @return Memory address of this section if it is loadable
 	 */
 	public long getAddress() {
@@ -415,6 +425,11 @@ public class ElfSection {
 	}
 
 	/**
+	 * This member’s value gives the byte offset from the beginning of the file to the first
+	 * byte in the section. One section type, {@link Type#NOBITS} described below, occupies no
+	 * space in the file, and its file offset member locates the conceptual placement in the
+	 * file
+	 * 
 	 * @return Returns the offset of the section in the file image
 	 */
 	public long getFileOffset() {
@@ -422,6 +437,8 @@ public class ElfSection {
 	}
 
 	/**
+	 * This member gives the section’s size in bytes.
+	 * 
 	 * @return Size of the section in the file image
 	 */
 	public long getFileSize() {
@@ -429,6 +446,9 @@ public class ElfSection {
 	}
 	
 	/**
+	 * This member holds a section header table index link, whose interpretation depends
+	 * on the section type
+	 * 
 	 * @return Returns the section index of an associated section. This field is used for several purposes, 
 	 * 	depending on the type of section
 	 */
@@ -437,14 +457,22 @@ public class ElfSection {
 	}
 
 	/**
-	 * @return Returns extra information about the section. This field is used for several purposes,
-	 *  depending on the type of section.
+	 * This member holds extra information, whose interpretation depends on the section
+	 * type. 
+	 * 
+	 * @return Returns extra information about the section.
 	 */
 	public int getInfo() {
 		return info;
 	}
 
 	/**
+	 * Some sections have address alignment constraints. For example, if a section holds a
+	 * doubleword, the system must ensure doubleword alignment for the entire section.
+	 * That is, the value of {@link #getAddress()} must be congruent to 0, modulo the value of
+	 * {@link #getAlignment()}. Currently, only 0 and positive integral powers of two are allowed.
+	 * Values 0 and 1 mean the section has no alignment constraints.
+	 * 
 	 * @return Returns the required alignment of the section. This field must be a power of two.
 	 */
 	public long getAlignment() {
@@ -460,6 +488,10 @@ public class ElfSection {
 	}
 	
 	/**
+	 * Some sections hold a table of fixed-size entries, such as a symbol table. For such a section, 
+	 * this member gives the size in bytes of each entry. The member contains 0 if the
+	 * section does not hold a table of fixed-size entries
+	 * 
 	 * @return Returns the file this section is associated with
 	 */
 	public ElfFile getFile() {

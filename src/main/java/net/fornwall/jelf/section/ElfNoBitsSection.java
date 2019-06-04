@@ -7,7 +7,10 @@ public class ElfNoBitsSection extends ElfSection {
 	}
 
 	/**
-	 * @returns NOBITS sections always have a file size of 0.
+	 * 	NOBITS sections always have a file size of 0. See {@link #getMemSize()}
+	 * 	for the memory size of this section.
+	 * 
+	 * 	@return Returns 0
 	 */
 	@Override
 	public long getFileSize() {

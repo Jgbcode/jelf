@@ -7,10 +7,11 @@ import java.util.Scanner;
 import net.fornwall.jelf.ElfFile;
 import net.fornwall.jelf.ElfHeader;
 import net.fornwall.jelf.app.Table.Align;
+import net.fornwall.jelf.section.ElfRelocationSection;
 import net.fornwall.jelf.section.ElfSection;
 import net.fornwall.jelf.section.ElfSymbolTableSection;
+import net.fornwall.jelf.section.symbol.ElfSymbol;
 import net.fornwall.jelf.segment.ElfSegment;
-import net.fornwall.jelf.symbol.ElfSymbol;
 
 public class Main {
 
@@ -354,6 +355,16 @@ public class Main {
 			
 			t.printTable();
 			System.out.println();
+		}
+	}
+	
+	public static void printRelocationSections(ElfFile file) {
+		List<ElfSection> reloc = file.getSectionHeaders().getSectionsOfType(ElfRelocationSection.class);
+		for(ElfSection s : reloc) {
+			ElfRelocationSection r = (ElfRelocationSection)s;
+			
+			Table t = new Table("Relocation section '" + r.getName() + "' at offset " + "0x" + 
+					Long.toHexString(r.getFileOffset()) + " contains " + r.get
 		}
 	}
 }

@@ -2,7 +2,7 @@ package net.fornwall.jelf.section;
 
 import net.fornwall.jelf.ElfException;
 import net.fornwall.jelf.ElfParser;
-import net.fornwall.jelf.symbol.ElfSymbol;
+import net.fornwall.jelf.section.symbol.ElfSymbol;
 
 public class ElfHashTableSection extends ElfSection {
 	private int buckets[];
@@ -63,7 +63,14 @@ public class ElfHashTableSection extends ElfSection {
 	 }
 	 
 	 /**
-	  * @return Returns the symbol table associated with this hash table
+	  * @return Returns the index of the associated {@link ElfSymbolTableSection}
+	  */
+	 public int getSymbolTableIndex() {
+		 return super.getLinkIndex();
+	 }
+	 
+	 /**
+	  * @return Returns the {@link ElfSymbolTableSection} associated with this hash table
 	  */
 	 public ElfSymbolTableSection getSymbolTable() {
 		 return (ElfSymbolTableSection)super.getLink(ElfSymbolTableSection.class);
