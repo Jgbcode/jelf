@@ -2,14 +2,15 @@ package net.fornwall.jelf;
 
 import java.io.IOException;
 
-public class ElfNote {
+public class ElfNoteSection {
     private int nameSize;
     private int descSize;
     private int type;
     private String name;
     private String desc;
     private byte[] descBytes;
-    ElfNote(ElfParser parser, long offset, int size) throws ElfException, IOException {
+    
+    ElfNoteSection(ElfParser parser, long offset, int size) throws ElfException, IOException {
         parser.seek(offset);
         nameSize = parser.readInt();
         descSize = parser.readInt();

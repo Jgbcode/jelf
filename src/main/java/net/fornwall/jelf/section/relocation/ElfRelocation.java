@@ -8,6 +8,7 @@ import net.fornwall.jelf.section.ElfRelocationSection;
 import net.fornwall.jelf.section.ElfSection;
 import net.fornwall.jelf.section.ElfSymbolTableSection;
 import net.fornwall.jelf.section.relocation.type.ElfRISCVRelocationType;
+import net.fornwall.jelf.section.relocation.type.ElfX64RelocationType;
 import net.fornwall.jelf.section.symbol.ElfSymbol;
 
 /**
@@ -76,6 +77,9 @@ public class ElfRelocation {
 		
 		// Register type
 		switch(file.getHeader().getMachine()) {
+		case X64:
+			type = ElfX64RelocationType.class;
+			break;
 		case RISCV:
 			type = ElfRISCVRelocationType.class;
 			break;

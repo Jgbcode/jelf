@@ -299,7 +299,7 @@ public class Main {
 		for(ElfSection es : sym) {
 			ElfSymbolTableSection s = (ElfSymbolTableSection)es;
 			
-			Table t = new Table("Symbol table '" + s.getName() + "' contains " + s.getSymbolCount());
+			Table t = new Table("Symbol table '" + s.getName() + "' contains " + s.getSymbolCount() + " entries:");
 			t.newRow();
 			
 			// Column names
@@ -413,11 +413,12 @@ public class Main {
 				t.addCell(re.getSymbol().getName());
 				
 				if(re instanceof ElfAddendRelocation) {
-					t.addCell(Long.toHexString(((ElfAddendRelocation)re).getAddend()));
+					t.addCell("0x" + Long.toHexString(((ElfAddendRelocation)re).getAddend()));
 				}
 			}
 			
 			t.printTable();
+			System.out.println();
 		}
 	}
 }
