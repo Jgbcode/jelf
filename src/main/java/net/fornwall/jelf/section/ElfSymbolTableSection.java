@@ -12,7 +12,7 @@ public class ElfSymbolTableSection extends ElfSection {
 		int num_entries = (int) (super.getFileSize() / super.getEntrySize());
 		symbols = new ElfSymbol[num_entries];
 		for (int i = 0; i < num_entries; i++) {
-			final long symbolOffset = super.getFileOffset() + (i * super.getEntrySize());
+			long symbolOffset = super.getFileOffset() + (i * super.getEntrySize());
 			symbols[i] = ElfSymbol.symbolFactory(ElfSymbolTableSection.super.getFile(), this, symbolOffset);
 		}
 	}

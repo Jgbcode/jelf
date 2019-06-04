@@ -376,6 +376,9 @@ public class ElfSection {
 			return new ElfStringTableSection(s);
 		case Type.HASH:
 			return new ElfHashTableSection(s);
+		case Type.REL:
+		case Type.RELA:
+			return new ElfRelocationSection(s);
 		//case Type.DYNAMIC:
 		// case Type.NOTE:
 		case Type.NOBITS:

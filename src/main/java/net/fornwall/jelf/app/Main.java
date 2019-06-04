@@ -10,6 +10,8 @@ import net.fornwall.jelf.app.Table.Align;
 import net.fornwall.jelf.section.ElfRelocationSection;
 import net.fornwall.jelf.section.ElfSection;
 import net.fornwall.jelf.section.ElfSymbolTableSection;
+import net.fornwall.jelf.section.relocation.ElfAddendRelocation;
+import net.fornwall.jelf.section.relocation.ElfRelocation;
 import net.fornwall.jelf.section.symbol.ElfSymbol;
 import net.fornwall.jelf.segment.ElfSegment;
 
@@ -40,6 +42,8 @@ public class Main {
 		printSectionMapping(file);
 		System.out.println();
 		printSymbolTables(file);
+		System.out.println();
+		printRelocationSections(file);
 	}
 	
 	private static void printHeader(ElfFile file) {
@@ -364,7 +368,56 @@ public class Main {
 			ElfRelocationSection r = (ElfRelocationSection)s;
 			
 			Table t = new Table("Relocation section '" + r.getName() + "' at offset " + "0x" + 
-					Long.toHexString(r.getFileOffset()) + " contains " + r.get
+					Long.toHexString(r.getFileOffset()) + " contains " + r.getRelocationCount() + " entries:");
+			t.newRow();
+			
+			// Column names
+			t.addCell("Offset");
+			t.setAlign(Align.RIGHT);
+			
+			t.addCell("Info");
+			t.setAlign(Align.RIGHT);
+			
+			t.addCell("Type");
+			t.setAlign(Align.LEFT);
+			
+			t.addCell("SymValue");
+			t.setAlign(Align.LEFT);
+			
+			t.addCell("SymName");
+			t.setAlign(Align.LEFT);
+			
+			if(s.getType().val == ElfSection.Type.RELA) {
+				t.addCell("Addend");
+				t.setAlign(Align.RIGHT);
+			}
+			
+			for(int i = 0; i < r.getRelocationCount(); i++) {
+				t.newRow();
+				
+				ElfRelocation re = r.getRelocation(i);
+				
+				// Offset
+				t.addCell("0x" + Long.toHexString(re.getOffset()));
+				
+				// Info
+				t.addCell("0x" + Long.toHexString(re.getInfo()));
+				
+				// Type
+				t.addCell(re.getType().name());
+				
+				// Symbol value
+				t.addCell(Long.toHexString(re.getSymbol().getValue()));
+				
+				// Symbol name
+				t.addCell(re.getSymbol().getName());
+				
+				if(re instanceof ElfAddendRelocation) {
+					t.addCell(Long.toHexString(((ElfAddendRelocation)re).getAddend()));
+				}
+			}
+			
+			t.printTable();
 		}
 	}
 }

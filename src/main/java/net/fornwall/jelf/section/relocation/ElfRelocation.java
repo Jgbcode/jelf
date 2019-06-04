@@ -1,7 +1,5 @@
 package net.fornwall.jelf.section.relocation;
 
-import java.util.HashMap;
-
 import net.fornwall.jelf.ElfException;
 import net.fornwall.jelf.ElfFile;
 import net.fornwall.jelf.ElfHeader;
@@ -9,6 +7,8 @@ import net.fornwall.jelf.ElfParser;
 import net.fornwall.jelf.section.ElfRelocationSection;
 import net.fornwall.jelf.section.ElfSection;
 import net.fornwall.jelf.section.ElfSymbolTableSection;
+import net.fornwall.jelf.section.relocation.type.ElfRISCVRelocationType;
+import net.fornwall.jelf.section.symbol.ElfSymbol;
 
 /**
  *	Defines a relocation which determines how to adjust a specific
@@ -21,61 +21,42 @@ public class ElfRelocation {
 	 *	provided processor specific functionality
 	 */
 	public static class Type {
-		private final HashMap<Integer, String> mapS;
-		
 		public final int val;
 		
-		public Type() {
-			this.val = 0;
-			
-			mapS = new HashMap<Integer, String>();
-		}
-		
-		protected Type(int val, Integer[] vals, String[] names) {
+		public Type(int val) {
 			this.val = val;
-			
-			mapS = new HashMap<Integer, String>();
-			for(int i = 0; i < vals.length; i++) {
-				mapS.put(vals[i], names[i]);
-			}
 		}
 		
-		public Type(int val, final Type t) {
-			this.val = val;
-			
-			mapS = t.mapS;
-		}
-		
+		// Must be overwritten by processor implementation defining subclasses
 		public String name() {
-			String s;
-			if((s = mapS.get(val)) == null)
-				return "?";
-			return s;
+			return "UNKNOWN";
 		}
 	}
 	
-	private ElfFile file;
-	private ElfRelocationSection table;
+	private final ElfFile file;
+	private final ElfRelocationSection table;
 	
-	private long offset;
-	private long info;
+	private final long offset;
+	private final long info;
 	
 	private int sym_ndx;
 	private Type type;
 	
-	protected ElfRelocation(ElfFile file, ElfRelocationSection table, long offset, Type type) {
+	protected ElfRelocation(ElfFile file, ElfRelocationSection table, long offset, Class<? extends Type> c) {
 		this.file = file;
 		this.table = table;
 		
 		ElfParser p = file.getParser();
-		offset = p.readIntOrLong();
+		p.seek(offset);
+		
+		this.offset = p.readIntOrLong();
 		info = p.readIntOrLong();
 		
 		// Type section and type
 		if(file.getHeader().getBitClass() == ElfHeader.BitClass.ELFCLASS32) {
 			this.sym_ndx = (int)(info >> 8);
 			try {
-				this.type = new Type((int)(info & 0xff), type);
+				this.type = c.getDeclaredConstructor(Integer.TYPE).newInstance((int)(info & 0xff));
 			} catch (Exception e) {
 				throw new ElfException(e.getMessage());
 			}
@@ -83,7 +64,7 @@ public class ElfRelocation {
 		else {
 			this.sym_ndx = (int)(info >> 32);
 			try {
-				this.type = new Type((int)info, type);
+				this.type = c.getDeclaredConstructor(Integer.TYPE).newInstance((int)info);
 			} catch (Exception e) {
 				throw new ElfException(e.getMessage());
 			}
@@ -91,9 +72,22 @@ public class ElfRelocation {
 	}
 	
 	public static ElfRelocation relocationFactory(ElfFile file, ElfRelocationSection table, long offset) {
+		Class<? extends Type> type;
 		switch(file.getHeader().getMachine()) {
-			default:
-				return new ElfRelocation(file, table, offset, new Type());
+		case RISCV:
+			type = ElfRISCVRelocationType.class;
+		default:
+			type = Type.class;
+		}
+		
+		if(table.getType().val == ElfSection.Type.REL) {
+			return new ElfRelocation(file, table, offset, Type.class);
+		}
+		else if(table.getType().val == ElfSection.Type.RELA) {
+			return new ElfAddendRelocation(file, table, offset, Type.class);
+		}
+		else {
+			throw new ElfException("Unknown relocation type: " + table.getType().name());
 		}
 	}
 
@@ -112,6 +106,11 @@ public class ElfRelocation {
 	}
 
 	/**
+	 * This member gives the location at which to apply the relocation action. For a relocatable
+	 * file, the value is the byte offset from the beginning of the section to the storage unit affected
+	 * by the relocation. For an executable file or a shared object, the value is the virtual address of
+	 * the storage unit affected by the relocation
+	 * 
 	 * @return Returns the offset at which to apply the relocation
 	 */
 	public long getOffset() {
@@ -128,12 +127,21 @@ public class ElfRelocation {
 	}
 
 	/**
+	 * See {@link #getSymbol()} to get the symbol directly
+	 * 
 	 * @return Returns the index of the symbol this relocation is associated with
 	 */
 	public int getSymbolIndex() {
 		return sym_ndx;
 	}
 
+	/**
+	 * @return Returns the symbol this relocation is associated with
+	 */
+	public ElfSymbol getSymbol() {
+		return getSymbolTable().getSymbol(sym_ndx);
+	}
+	
 	/** 
 	 * @return Returns the type of this relocation. This type may vary depending
 	 * 	on the target processor.
@@ -144,7 +152,9 @@ public class ElfRelocation {
 	
 	/**
 	 * This method is short for {@link ElfRelocation#getRelocationTable() getRelocationTable()}.
-	 * 	{@link ElfRelocationSection#getSymbolTableIndex() getSymbolTableIndex()}
+	 * 	{@link ElfRelocationSection#getSymbolTableIndex() getSymbolTableIndex()}.
+	 * 
+	 * See {@link #getSymbolTable()} to get the symbol table directly
 	 * 
 	 * @return Returns the index of the symbol table section that contains the
 	 * 	symbol associated with this relocation
@@ -155,7 +165,9 @@ public class ElfRelocation {
 	
 	/**
 	 * This method is short for {@link ElfRelocation#getRelocationTable() getRelocationTable()}.
-	 * 	{@link ElfRelocationSection#getSectionIndex() getSectionIndex()}
+	 * 	{@link ElfRelocationSection#getSectionIndex() getSectionIndex()}.
+	 * 
+	 * See {@link #getSection()} to get the section directly
 	 * 
 	 * @return Returns the section header index of the {@link ElfSection} to which the 
 	 * 	relocation applies
