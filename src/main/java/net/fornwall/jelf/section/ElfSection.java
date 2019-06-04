@@ -166,8 +166,6 @@ public class ElfSection {
 				return "GROUP";
 			case SYMTAB_SHNDX:
 				return "SYMTAB_SHNDX";
-			case NUM:
-				return "NUM";
 			case GNU_ATTRIBUTES:
 				return "GNU_ATTRIBUTES";
 			case GNU_HASH:
@@ -351,6 +349,7 @@ public class ElfSection {
 		entry_size = parser.readIntOrLong();
 	}
 	
+	/** Only to be called by subclasses */
 	protected ElfSection(ElfSection s) {
 		this.file = s.file;
 		
@@ -466,8 +465,6 @@ public class ElfSection {
 	public ElfFile getFile() {
 		return file;
 	}
-
-	// Convenience methods
 	
 	/** 
 	 * @return Returns the name of the section, an empty string is returned if the section has no name

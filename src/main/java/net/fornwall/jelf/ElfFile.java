@@ -34,22 +34,6 @@ public final class ElfFile {
 	
 	/** Elf program headers */
 	private ElfProgramHeaders programHeaders;
-	
-	public ElfParser getParser() {
-		return parser;
-	}
-
-	public ElfHeader getHeader() {
-		return header;
-	}
-
-	public ElfSectionHeaders getSectionHeaders() {
-		return sectionHeaders;
-	}
-	
-	public ElfProgramHeaders getProgramHeaders() {
-		return programHeaders;
-	}
  
 	public static ElfFile fromStream(InputStream in) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -99,7 +83,6 @@ public final class ElfFile {
         this.parser = new ElfParser(buffer, startPosition);
         parse(parser);
     }
-    
 
 	public ElfFile(ByteArrayInputStream baos) throws ElfException, IOException {
 		this.parser = new ElfParser(baos);
@@ -113,5 +96,33 @@ public final class ElfFile {
 		this.header = parser.getHeader();
 		sectionHeaders = new ElfSectionHeaders(this);
 		programHeaders = new ElfProgramHeaders(this);
+	}
+	
+	/**
+	 * @return Returns the {@link ElfParser} associated with this file
+	 */
+	public ElfParser getParser() {
+		return parser;
+	}
+
+	/**
+	 * @return Returns the {@link ElfHeader} associated with this file
+	 */
+	public ElfHeader getHeader() {
+		return header;
+	}
+
+	/**
+	 * @return Returns the {@link ElfSectionHeaders} associated with this file
+	 */
+	public ElfSectionHeaders getSectionHeaders() {
+		return sectionHeaders;
+	}
+	
+	/**
+	 * @return Returns the {@link ElfProgramHeaders} associated with this file
+	 */
+	public ElfProgramHeaders getProgramHeaders() {
+		return programHeaders;
 	}
 }

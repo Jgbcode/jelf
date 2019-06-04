@@ -100,8 +100,6 @@ public class ElfSegment {
 				return "PHDR";
 			case TLS:
 				return "TLS";
-			case NUM:
-				return "NUM";
 			case GNU_EH_FRAME:
 				return "GNU_EH_FRAME";
 			case GNU_STACK:

@@ -8,6 +8,9 @@ import net.fornwall.jelf.section.ElfSection;
 import net.fornwall.jelf.section.ElfStringTableSection;
 import net.fornwall.jelf.section.ElfSymbolTableSection;
 
+/**
+ *	The collection of sections contained in a {@link ElfFile}
+ */
 public class ElfSectionHeaders {
 	private ElfFile file;
 	private ElfSection[] sections;
