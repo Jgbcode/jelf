@@ -2,7 +2,6 @@ package net.fornwall.jelf.app;
 
 import java.io.File;
 import java.util.List;
-import java.util.Scanner;
 
 import net.fornwall.jelf.ElfFile;
 import net.fornwall.jelf.ElfHeader;
@@ -22,11 +21,10 @@ public class Main {
 
 	public static void main(String[] args) throws Exception {
 		if(args.length == 0) {
-			Scanner in = new Scanner(System.in);
-			System.out.print("Enter a file path: ");
 			args = new String[1];
-			args[0] = in.nextLine();
-			in.close();
+			
+			// Default testing file
+			args[0] = "src/test/resources/hello_riscv.out";
 		}
 		else if (args.length != 1) {
 			System.out.println("Usage: java ELFFileParser <elf file>");
@@ -465,7 +463,15 @@ public class Main {
 				t.addCell(Integer.toString(n.getNoteType()));
 				
 				// Note
-				t.addCell(n.getDescString());
+				String str = "";
+				for(int j = 0; j < n.getDescSize(); j++) {
+					str = Integer.toHexString(n.getDescByte(i) & 0xf) + str;
+					str = Integer.toHexString(n.getDescByte(i) >> 4) + str;
+				}
+				t.addCell(str);
+				
+				// Most notes don't seem to contain string data
+				// t.addCell(n.getDescString());
 			}
 				
 			t.printTable();
@@ -517,6 +523,7 @@ public class Main {
 			}
 			
 			t.printTable();
+			System.out.println();
 		}
 	}
 }
