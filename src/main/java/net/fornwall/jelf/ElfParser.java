@@ -14,7 +14,7 @@ public class ElfParser {
     private final long mbbStartPosition;
 
 
-	public ElfParser(ByteArrayInputStream fsFile) throws ElfException, IOException {
+	public ElfParser(ByteArrayInputStream fsFile) {
 		this.fsFile = fsFile;
         mappedByteBuffer = null;
         mbbStartPosition = -1;
@@ -22,7 +22,7 @@ public class ElfParser {
         header.parse();
     }
 
-    public ElfParser(MappedByteBuffer byteBuffer, long mbbStartPos) throws ElfException, IOException {
+    public ElfParser(MappedByteBuffer byteBuffer, long mbbStartPos) {
         mappedByteBuffer = byteBuffer;
         mbbStartPosition = mbbStartPos;
         mappedByteBuffer.position((int)mbbStartPosition);
@@ -121,14 +121,18 @@ public class ElfParser {
 		return val;
 	}
 
-	public int read(byte[] data) throws IOException {
+	public int read(byte[] data) {
         if (fsFile != null) {
-            return fsFile.read(data);
+            try {
+				return fsFile.read(data);
+			} catch (IOException e) {
+				throw new ElfException("Could not read file: " + e.getMessage());
+			}
         } else if (mappedByteBuffer != null) {
             mappedByteBuffer.get(data);
             return data.length;
         }
-        throw new IOException("No way to read from file or buffer");
+        throw new ElfException("No way to read from file or buffer");
 	}
 
 	public ElfHeader getHeader() {

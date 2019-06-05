@@ -257,14 +257,12 @@ public class ElfSymbol {
 	private final Binding binding;
 	private final Type type;
 
-	private final ElfFile file;
 	private final ElfSymbolTableSection table;
 	
-	private ElfSymbol(ElfFile file, ElfSymbolTableSection table, long offset) {
-		this.file = file;
+	private ElfSymbol(ElfSymbolTableSection table, long offset) {
 		this.table = table;
-		ElfParser parser = file.getParser();
-		ElfHeader header = file.getHeader();
+		ElfParser parser = table.getFile().getParser();
+		ElfHeader header = table.getFile().getHeader();
 		
 		parser.seek(offset);
 		if (header.getBitClass() == ElfHeader.BitClass.ELFCLASS32) {
@@ -288,7 +286,6 @@ public class ElfSymbol {
 	}
 	
 	protected ElfSymbol(ElfSymbol sym) {
-		this.file = sym.file;
 		this.table = sym.table;
 		this.name_ndx = sym.name_ndx;
 		this.value = sym.value;
@@ -301,7 +298,7 @@ public class ElfSymbol {
 	}
 	
 	public static ElfSymbol symbolFactory(ElfFile file, ElfSymbolTableSection table, long offset) {
-		ElfSymbol s = new ElfSymbol(file, table, offset);
+		ElfSymbol s = new ElfSymbol(table, offset);
 		
 		/*
 		 * TODO: Return subclass if needed
@@ -369,7 +366,7 @@ public class ElfSymbol {
 	
 	/** @return Returns the file this symbol is associated with */
 	public ElfFile getFile() {
-		return file;
+		return table.getFile();
 	}
 
 	/** @return Returns the binding for this symbol. */
@@ -391,13 +388,13 @@ public class ElfSymbol {
 	public ElfSection getSection() {
 		if(section_header_ndx.isReserved())
 			throw new ElfException("Attempting to access reserved section: " + section_header_ndx.name());
-		return file.getSectionHeaders().getSectionByIndex(section_header_ndx.val);
+		return table.getFile().getSectionHeaders().getSectionByIndex(section_header_ndx.val);
 	}
 	
 	/** @return Returns the section associated with the symbol and insures it is of a certion type c */
 	public ElfSection getSection(Class<? extends ElfSection> c) {
 		if(section_header_ndx.isReserved())
 			throw new ElfException("Attempting to access reserved section: " + section_header_ndx.name());
-		return file.getSectionHeaders().getSectionByIndex(section_header_ndx.val, c);
+		return table.getFile().getSectionHeaders().getSectionByIndex(section_header_ndx.val, c);
 	}
 }

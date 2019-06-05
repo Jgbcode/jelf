@@ -7,9 +7,12 @@ import java.util.Scanner;
 import net.fornwall.jelf.ElfFile;
 import net.fornwall.jelf.ElfHeader;
 import net.fornwall.jelf.app.Table.Align;
+import net.fornwall.jelf.section.ElfNoteSection;
 import net.fornwall.jelf.section.ElfRelocationSection;
 import net.fornwall.jelf.section.ElfSection;
+import net.fornwall.jelf.section.ElfStringTableSection;
 import net.fornwall.jelf.section.ElfSymbolTableSection;
+import net.fornwall.jelf.section.note.ElfNote;
 import net.fornwall.jelf.section.relocation.ElfAddendRelocation;
 import net.fornwall.jelf.section.relocation.ElfRelocation;
 import net.fornwall.jelf.section.symbol.ElfSymbol;
@@ -31,7 +34,7 @@ public class Main {
 		}
 
 		ElfFile file = ElfFile.fromFile(new File(args[0]));
-		
+
 		// Similar to readelf -a <elf_file>
 		printHeader(file);
 		System.out.println();
@@ -44,6 +47,10 @@ public class Main {
 		printSymbolTables(file);
 		System.out.println();
 		printRelocationSections(file);
+		System.out.println();
+		printNoteSections(file);
+		System.out.println();
+		printStringTables(file);
 	}
 	
 	private static void printHeader(ElfFile file) {
@@ -367,7 +374,7 @@ public class Main {
 		for(ElfSection s : reloc) {
 			ElfRelocationSection r = (ElfRelocationSection)s;
 			
-			Table t = new Table("Relocation section '" + r.getName() + "' at offset " + "0x" + 
+			Table t = new Table("Relocation section '" + r.getName() + "' at offset 0x" + 
 					Long.toHexString(r.getFileOffset()) + " contains " + r.getRelocationCount() + " entries:");
 			t.newRow();
 			
@@ -419,6 +426,97 @@ public class Main {
 			
 			t.printTable();
 			System.out.println();
+		}
+	}
+	
+	public static void printNoteSections(ElfFile file) {
+		List<ElfSection> notes = file.getSectionHeaders().getSectionsOfType(ElfNoteSection.class);
+		for(ElfSection s : notes) {
+			ElfNoteSection ns = (ElfNoteSection)s;
+			
+			Table t = new Table("Displaying notes found in: " + ns.getName());
+			t.newRow();
+			
+			// Column names
+			t.addCell("Owner");
+			t.setAlign(Align.LEFT);
+			
+			t.addCell("DataSize");
+			t.setAlign(Align.RIGHT);
+			
+			t.addCell("Description");
+			t.setAlign(Align.LEFT);
+			
+			t.addCell("Note");
+			t.setAlign(Align.LEFT);
+			
+			t.newRow();
+			
+			for(int i = 0; i < ns.getNoteCount(); i++) {
+				ElfNote n = ns.getNote(i);
+				
+				// Owner
+				t.addCell(n.getNoteName());
+				
+				// Data size
+				t.addCell("0x" + Integer.toHexString(n.getDescSize()));
+				
+				// Description
+				t.addCell(Integer.toString(n.getNoteType()));
+				
+				// Note
+				t.addCell(n.getDescString());
+			}
+				
+			t.printTable();
+			System.out.println();
+		}
+	}
+	
+	public static void printStringTables(ElfFile file) {
+		List<ElfSection> strtabs = file.getSectionHeaders().getSectionsOfType(ElfStringTableSection.class);
+		
+		for(ElfSection sec : strtabs) {
+			ElfStringTableSection s = (ElfStringTableSection)sec;
+			
+			Table t = new Table("String table section \'" + s.getName() + "\' at offset 0x" + 
+					Long.toHexString(s.getFileOffset()) + " contains " + s.getStringCount() + " entries");
+			t.newRow();
+			
+			// Column names
+			t.addCell("Offset");
+			t.setAlign(Align.RIGHT);
+			
+			t.addCell("Size");
+			t.setAlign(Align.RIGHT);
+			
+			t.addCell("String");
+			t.setAlign(Align.LEFT);
+			
+			int offset = 0;
+			for(int i = 0; i < s.getStringCount();) {
+				String str = s.getString(offset);
+				if(str.isEmpty()) {
+					offset++;
+					continue;
+				}
+				i++;
+				
+				t.newRow();
+				
+				// Offset
+				t.addCell("0x" + Integer.toHexString(offset));
+				
+				// Size
+				t.addCell("0x" + Integer.toHexString(str.length()));
+				
+				// String
+				t.addCell(str);
+				
+				offset += str.length();
+			}
+			
+			t.printTable();
 		}
 	}
 }

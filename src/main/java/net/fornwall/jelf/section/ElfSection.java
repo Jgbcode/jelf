@@ -380,7 +380,8 @@ public class ElfSection {
 		case Type.RELA:
 			return new ElfRelocationSection(s);
 		//case Type.DYNAMIC:
-		// case Type.NOTE:
+		case Type.NOTE:
+			return new ElfNoteSection(s);
 		case Type.NOBITS:
 			return new ElfNoBitsSection(s);
 		default:

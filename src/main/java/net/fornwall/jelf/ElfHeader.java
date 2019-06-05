@@ -1,6 +1,5 @@
 package net.fornwall.jelf;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -213,7 +212,7 @@ public class ElfHeader {
 	
 	private final ElfParser parser;
 	
-	public ElfHeader(ElfParser parser) throws ElfException, IOException {
+	public ElfHeader(ElfParser parser) {
 		this.parser = parser;
 		
         byte[] ident = new byte[16];

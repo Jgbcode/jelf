@@ -33,8 +33,7 @@ public class ElfRelocation {
 			return "UNKNOWN";
 		}
 	}
-	
-	private final ElfFile file;
+
 	private final ElfRelocationSection table;
 	
 	private final long offset;
@@ -43,18 +42,17 @@ public class ElfRelocation {
 	private int sym_ndx;
 	private Type type;
 	
-	protected ElfRelocation(ElfFile file, ElfRelocationSection table, long offset, Class<? extends Type> c) {
-		this.file = file;
+	protected ElfRelocation(ElfRelocationSection table, long offset, Class<? extends Type> c) {
 		this.table = table;
 		
-		ElfParser p = file.getParser();
+		ElfParser p = table.getFile().getParser();
 		p.seek(offset);
 		
 		this.offset = p.readIntOrLong();
 		info = p.readIntOrLong();
 		
 		// Type section and type
-		if(file.getHeader().getBitClass() == ElfHeader.BitClass.ELFCLASS32) {
+		if(table.getFile().getHeader().getBitClass() == ElfHeader.BitClass.ELFCLASS32) {
 			this.sym_ndx = (int)(info >> 8);
 			try {
 				this.type = c.getDeclaredConstructor(Integer.TYPE).newInstance((int)(info & 0xff));
@@ -88,10 +86,10 @@ public class ElfRelocation {
 		}
 		
 		if(table.getType().val == ElfSection.Type.REL) {
-			return new ElfRelocation(file, table, offset, type);
+			return new ElfRelocation(table, offset, type);
 		}
 		else if(table.getType().val == ElfSection.Type.RELA) {
-			return new ElfAddendRelocation(file, table, offset, type);
+			return new ElfAddendRelocation(table, offset, type);
 		}
 		else {
 			throw new ElfException("Unknown relocation type: " + table.getType().name());
@@ -99,12 +97,12 @@ public class ElfRelocation {
 	}
 
 	/**
-	 * @return Returns the file this relocation is associated with
+	 * @return Returns the file that contains this relocation
 	 */
 	public ElfFile getFile() {
-		return file;
+		return table.getFile();
 	}
-
+	
 	/**
 	 * @return Returns the relocation section which contains this relocation
 	 */

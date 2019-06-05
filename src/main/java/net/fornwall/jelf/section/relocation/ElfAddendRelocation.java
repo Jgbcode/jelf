@@ -1,16 +1,15 @@
 package net.fornwall.jelf.section.relocation;
 
-import net.fornwall.jelf.ElfFile;
 import net.fornwall.jelf.section.ElfRelocationSection;
 
 public class ElfAddendRelocation extends ElfRelocation {
 
 	private long addend;
 	
-	protected ElfAddendRelocation(ElfFile file, ElfRelocationSection table, long offset, Class<? extends Type> c) {
-		super(file, table, offset, c);
+	protected ElfAddendRelocation(ElfRelocationSection table, long offset, Class<? extends Type> c) {
+		super(table, offset, c);
 		
-		addend = file.getParser().readIntOrLong();
+		addend = table.getFile().getParser().readIntOrLong();
 	}
 	
 	/**
