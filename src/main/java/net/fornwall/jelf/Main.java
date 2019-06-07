@@ -1,7 +1,6 @@
 package net.fornwall.jelf;
 
 import java.io.File;
-import java.util.List;
 
 import net.fornwall.jelf.Table.Align;
 import net.fornwall.jelf.section.ElfDynamicSection;
@@ -10,7 +9,6 @@ import net.fornwall.jelf.section.ElfRelocationSection;
 import net.fornwall.jelf.section.ElfSection;
 import net.fornwall.jelf.section.ElfStringTableSection;
 import net.fornwall.jelf.section.ElfSymbolTableSection;
-import net.fornwall.jelf.section.dynamic.ElfDynamicEntry;
 
 public class Main {
 
@@ -57,11 +55,12 @@ public class Main {
 		for(ElfStringTableSection s : file.getSectionHeaders().getSectionsOfType(ElfStringTableSection.class))
 			System.out.println(s);
 		
-		
-		printDynamicSections(file);
+		// Print dynamic sections
+		for(ElfDynamicSection s : file.getSectionHeaders().getSectionsOfType(ElfDynamicSection.class))
+			System.out.println(s);
 	}
 	
-	public static void printSectionMapping(ElfFile file) {
+	private static void printSectionMapping(ElfFile file) {
 		Table t = new Table("Section to Segment mapping:");
 		
 		// Column names
@@ -88,40 +87,5 @@ public class Main {
 		}
 		
 		t.printTable();
-	}
-	
-	public static void printDynamicSections(ElfFile file) {
-		List<ElfDynamicSection> dyns = file.getSectionHeaders().getSectionsOfType(ElfDynamicSection.class);
-		
-		for(ElfDynamicSection d : dyns) {
-			Table t = new Table("Dynamic section at offset " + d.getFileOffset() + " contains " + 
-					d.getEntryCount() + " entries:");
-			
-			// Column names
-			t.addCell("Tag");
-			t.setColAlign(Align.RIGHT);
-			
-			t.addCell("Type");
-			t.setColAlign(Align.LEFT);
-			
-			t.addCell("Name / Value");
-			t.setColAlign(Align.LEFT);
-			
-			for(int i = 0; i < d.getEntryCount(); i++) {
-				t.newRow();
-				
-				ElfDynamicEntry e = d.getEntry(i);
-				
-				// Tag
-				t.addCell("0x" + Long.toHexString(e.getType().val));
-				
-				// Type
-				t.addCell("(" + e.getType().name() + ")");
-				
-				t.addCell("0x" + e.getAddr());
-			}
-			
-			t.printTable();
-		}
 	}
 }

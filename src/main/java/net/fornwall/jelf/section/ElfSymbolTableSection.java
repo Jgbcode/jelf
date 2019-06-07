@@ -62,7 +62,7 @@ public class ElfSymbolTableSection extends ElfSection {
 	/**
 	 * See {@link #toString()} to get the formatted string directly
 	 * 
-	 * @return Returns a {@link Table} object that contains the formatted contents of this header.
+	 * @return Returns a {@link Table} object that contains the formatted contents of this section.
 	 */
 	public Table getFormattedTable() {
 		Table t = new Table("Symbol table '" + getName() + "' contains " + getSymbolCount() + " entries:");

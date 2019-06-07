@@ -208,7 +208,7 @@ public class ElfSectionHeaders {
 	/**
 	 * See {@link #toString()} to get the formatted string directly
 	 * 
-	 * @return Returns a {@link Table} object that contains the formatted contents of this header.
+	 * @return Returns a {@link Table} object that contains the formatted contents of this object.
 	 */
 	public Table getFormattedTable() {
 		Table t = new Table("Section Headers:");
