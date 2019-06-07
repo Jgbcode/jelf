@@ -4,7 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 
-/** Package internal class used for parsing ELF files. */
+/** Class used for parsing ELF files. */
 public class ElfParser {
 
 	private final ElfHeader header;

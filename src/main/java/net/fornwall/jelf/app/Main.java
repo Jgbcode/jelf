@@ -32,7 +32,7 @@ public class Main {
 			System.exit(0);
 		}
 
-		ElfFile file = ElfFile.fromFile(new File(args[0]));
+		ElfFile file = new ElfFile(new File(args[0]));
 
 		// Similar to readelf -a <elf_file>
 		System.out.println(file.getHeader());
