@@ -36,74 +36,13 @@ public class Main {
 		// Similar to readelf -a <elf_file>
 		System.out.println(file.getHeader());
 		System.out.println(file.getSectionHeaders());
-		printProgramHeaders(file);
+		System.out.println(file.getProgramHeaders());
 		printSectionMapping(file);
 		printSymbolTables(file);
 		printRelocationSections(file);
 		printNoteSections(file);
 		printStringTables(file);
 		printDynamicSections(file);
-	}
-	
-	private static void printProgramHeaders(ElfFile file) {
-		Table t = new Table("Program Headers");
-		
-		// Column names
-		t.addCell("Type");
-		t.setColAlign(Align.LEFT);
-		
-		t.addCell("Offset");
-		t.setColAlign(Align.RIGHT);
-		
-		t.addCell("VirtAddr");
-		t.setColAlign(Align.RIGHT);
-		
-		t.addCell("PhysAddr");
-		t.setColAlign(Align.RIGHT);
-		
-		t.addCell("FileSize");
-		t.setColAlign(Align.RIGHT);
-		
-		t.addCell("MemSize");
-		t.setColAlign(Align.RIGHT);
-		
-		t.addCell("Flags");
-		t.setColAlign(Align.LEFT);
-		
-		t.addCell("Align");
-		t.setColAlign(Align.RIGHT);
-		
-		for(int i = 0; i < file.getProgramHeaders().size(); i++) {
-			t.newRow();
-			
-			ElfSegment s = file.getProgramHeaders().getSegmentByIndex(i);
-			
-			// Type
-			t.addCell(s.getType().name());
-			
-			// Offset
-			t.addCell("0x" + Long.toHexString(s.getOffset()));
-			
-			// Virtual Address
-			t.addCell("0x" + Long.toHexString(s.getVirtualAddress()));
-			
-			// Physical Address
-			t.addCell("0x" + Long.toHexString(s.getPhysicalAddress()));
-			
-			// File Size
-			t.addCell("0x" + Long.toHexString(s.getFileSize()));
-			
-			// MemSize
-			t.addCell("0x" + Long.toHexString(s.getMemSize()));
-			
-			// Flags
-			t.addCell(s.getFlags().name());
-			
-			// Align
-			t.addCell("0x" + Long.toHexString(s.getAlignment()));
-		}
-		
-		t.printTable();
 	}
 	
 	public static void printSectionMapping(ElfFile file) {

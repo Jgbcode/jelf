@@ -55,7 +55,7 @@ public class ElfSectionHeaders {
 	}
 	
 	/**
-	 * @return Returns the file these section headers are related to
+	 * @return Returns the file that contains these section headers
 	 */
 	public ElfFile getFile() {
 		return this.file;
