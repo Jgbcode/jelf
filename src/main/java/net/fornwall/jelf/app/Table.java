@@ -42,6 +42,8 @@ public class Table {
 		this.table = new ArrayList<ArrayList<String>>();
 		this.align = new ArrayList<Align>();
 		this.seperator = seperator;
+		
+		newRow();
 	}
 	
 	/**
@@ -66,7 +68,7 @@ public class Table {
 	 * 
 	 * @param align the alignment of the column
 	 */
-	public void setAlign(Align align) {
+	public void setColAlign(Align align) {
 		this.align.add(align);
 	}
 	

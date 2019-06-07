@@ -3,11 +3,13 @@ package net.fornwall.jelf;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.fornwall.jelf.app.Table;
+import net.fornwall.jelf.app.Table.Align;
 import net.fornwall.jelf.segment.ElfSegment;
 
 public class ElfHeader {
 	/**
-	 *	Describes the size of the ELF file
+	 *	Describes the address size of the ELF file
 	 */
 	public enum BitClass {
 		/** 32-bit objects. */
@@ -35,6 +37,9 @@ public class ElfHeader {
 		}
 	}
 	
+	/**
+	 * Describes the endianness of the ELF file
+	 */
 	public enum DataFormat {
 		/** Little endian format (LSB in lower address) */
 		ELFDATA2LSB((byte)1),
@@ -61,6 +66,9 @@ public class ElfHeader {
 		}
 	}
 	
+	/**
+	 * Describes the ELF version of the file. There is currently only one version
+	 */
 	public enum Version {
 		/** Current version */
 		EV_CURRENT(1);
@@ -208,10 +216,19 @@ public class ElfHeader {
 	 * Elf{32,64}_Ehdr#e_shstrndx. Index into the section header table associated with the section name string table.
 	 * SH_UNDEF if there is no section name string table.
 	 */
-	public short e_shstrndx; // Elf32_Half
+	private short e_shstrndx; // Elf32_Half
 	
 	private final ElfParser parser;
 	
+	/**
+	 * Constructs the header of the ELF file, this should not be called directly as
+	 * {@link ElfParser} will automatically create the header when it is instantiated
+	 * 
+	 * Note, this only instantiates the header components that are vital for parsing. The
+	 * other components must be initialized using {@link #parse()}.
+	 * 
+	 * @param parser the ELF parser object
+	 */
 	public ElfHeader(ElfParser parser) {
 		this.parser = parser;
 		
@@ -232,6 +249,10 @@ public class ElfHeader {
         // ident[9-15] // EI_PAD, currently unused.
 	}
 	
+	/**
+	 * Completes the parsing of non vital header components. This is automatically done by
+	 * {@link ElfParser} and should not be called directly.
+	 */
 	public void parse() {
         e_type = FileType.fromShort(parser.readShort());
         e_machine = Machine.fromShort(parser.readShort());
@@ -256,65 +277,188 @@ public class ElfHeader {
         }
 	}
 
+	/**
+	 * @return Returns a {@link BitClass} which describes the address size (32 / 64 bit)
+	 * described by this header.
+	 */
 	public BitClass getBitClass() {
 		return ei_class;
 	}
 
+	/**
+	 * @return Returns the {@link DataFormat} described by this header.
+	 */
 	public DataFormat getDataFormat() {
 		return ei_data;
 	}
 
+	/**
+	 * @return Returns the {@link Version} described by this header.
+	 */
 	public Version getVersion() {
 		return ei_version;
 	}
 
+	/**
+	 * @return Returns the {@link FileType} described by this header.
+	 */
 	public FileType getFileType() {
 		return e_type;
 	}
 
+	/**
+	 * @return Returns the target {@link Machine} described by this header.
+	 */
 	public Machine getMachine() {
 		return e_machine;
 	}
 
+	/**
+	 * @return Returns the entry address described by this header.
+	 */
 	public long getEntryAddress() {
 		return e_entry;
 	}
 
+	/**
+	 * @return Returns the file offset of the program header, the data at this
+	 * offset will be automatically parsed into a {@link ElfProgramHeaders} object
+	 */
 	public long getProgramHeaderOffset() {
 		return e_phoff;
 	}
 
+	/**
+	 * @return Returns the file offset of the section header, the data at this
+	 * offset will be automatically parsed into a {@link ElfSectionHeaders} object
+	 */
 	public long getSectionHeaderOffset() {
 		return e_shoff;
 	}
 
+	/**
+	 * @return Returns the flags described by this header.
+	 */
 	public int getFlags() {
 		return e_flags;
 	}
 
+	/**
+	 * @return Returns the file size in bytes of this header.
+	 */
 	public short getSize() {
 		return e_ehsize;
 	}
 
+	/**
+	 * @return Returns the file size in bytes of each entry in the program header
+	 */
 	public short getProgramHeaderEntrySize() {
 		return e_phentsize;
 	}
 
+	/**
+	 * @return Returns the number of entries in the program header
+	 */
 	public short getProgramHeaderEntryCount() {
 		return e_phnum;
 	}
 
+	/**
+	 * @return Returns the file size in bytes of each entry in the section header
+	 */
 	public short getSectionHeaderEntrySize() {
 		return e_shentsize;
 	}
 
+	/**
+	 * @return Returns the number of entries in the section header
+	 */
 	public short getSectionHeaderEntryCount() {
 		return e_shnum;
 	}
 
+	/**
+	 * @return Returns the index of the section header table that contains the section names
+	 */
 	public short getSectionHeaderStringTableIndex() {
 		return e_shstrndx;
 	}
 	
+	/**
+	 * See {@link #toString()} to get the formatted string directly
+	 * 
+	 * @return Returns a {@link Table} object that contains the formatted contents of this header.
+	 */
+	public Table getFormattedTable() {
+		Table t = new Table("ELF Header:");
+		
+		t.addCell("Class:");
+		t.setColAlign(Align.LEFT);
+		t.addCell(getBitClass().name());
+		t.setColAlign(Align.LEFT);
+		t.newRow();
+		
+		t.addCell("Data:");
+		t.addCell(getDataFormat().name());
+		t.newRow();
+		
+		t.addCell("Version:");
+		t.addCell(getVersion().name());
+		t.newRow();
+		
+		t.addCell("Type:");
+		t.addCell(getFileType().name());
+		t.newRow();
+		
+		t.addCell("Machine:");
+		t.addCell(getMachine().name());
+		t.newRow();
+		
+		t.addCell("Entry point address:");
+		t.addCell("0x" + Long.toHexString(getEntryAddress()));
+		t.newRow();
+		
+		t.addCell("Start of program headers:");
+		t.addCell(getProgramHeaderOffset() + " (bytes into file)");
+		t.newRow();
+		
+		t.addCell("Start of section headers:");
+		t.addCell(getSectionHeaderOffset() + " (bytes into file)");
+		t.newRow();
+		
+		t.addCell("Flags:");
+		t.addCell(Integer.toHexString(getFlags()));
+		t.newRow();
+		
+		t.addCell("Size of this header:");
+		t.addCell(getSize() + " (bytes)");
+		t.newRow();
+		
+		t.addCell("Size of program headers:");
+		t.addCell(getProgramHeaderEntrySize() + " (bytes)");
+		t.newRow();
+		
+		t.addCell("Number of program headers:");
+		t.addCell(Short.toString(getProgramHeaderEntryCount()));
+		t.newRow();
+		
+		t.addCell("Size of section headers:");
+		t.addCell(getSectionHeaderEntrySize() + " (bytes)");
+		t.newRow();
+		
+		t.addCell("Number of section headers:");
+		t.addCell(Short.toString(getSectionHeaderEntryCount()));
+		t.newRow();
+		
+		t.addCell("Section header string table index:");
+		t.addCell(Short.toString(getSectionHeaderStringTableIndex()));
+		
+		return t;
+	}
 	
+	@Override
+	public String toString() {
+		return this.getFormattedTable().toString();
+	}
 }

@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.List;
 
 import net.fornwall.jelf.ElfFile;
-import net.fornwall.jelf.ElfHeader;
 import net.fornwall.jelf.app.Table.Align;
 import net.fornwall.jelf.section.ElfDynamicSection;
 import net.fornwall.jelf.section.ElfNoteSection;
@@ -36,7 +35,7 @@ public class Main {
 		ElfFile file = ElfFile.fromFile(new File(args[0]));
 
 		// Similar to readelf -a <elf_file>
-		printHeader(file);
+		System.out.println(file.getHeader());
 		printSectionHeaders(file);
 		printProgramHeaders(file);
 		printSectionMapping(file);
@@ -47,114 +46,42 @@ public class Main {
 		printDynamicSections(file);
 	}
 	
-	private static void printHeader(ElfFile file) {
-		Table t = new Table("ELF Header:");
-		
-		t.setAlign(Table.Align.LEFT);
-		t.setAlign(Table.Align.LEFT);
-		t.newRow();
-		
-		ElfHeader h = file.getHeader();
-		
-		t.addCell("Class:");
-		t.addCell(h.getBitClass().name());
-		t.newRow();
-		
-		t.addCell("Data:");
-		t.addCell(h.getDataFormat().name());
-		t.newRow();
-		
-		t.addCell("Version:");
-		t.addCell(h.getVersion().name());
-		t.newRow();
-		
-		t.addCell("Type:");
-		t.addCell(h.getFileType().name());
-		t.newRow();
-		
-		t.addCell("Machine:");
-		t.addCell(h.getMachine().name());
-		t.newRow();
-		
-		t.addCell("Entry point address:");
-		t.addCell("0x" + Long.toHexString(h.getEntryAddress()));
-		t.newRow();
-		
-		t.addCell("Start of program headers:");
-		t.addCell(h.getProgramHeaderOffset() + " (bytes into file)");
-		t.newRow();
-		
-		t.addCell("Start of section headers:");
-		t.addCell(h.getSectionHeaderOffset() + " (bytes into file)");
-		t.newRow();
-		
-		t.addCell("Flags:");
-		t.addCell(Integer.toHexString(h.getFlags()));
-		t.newRow();
-		
-		t.addCell("Size of this header:");
-		t.addCell(h.getSize() + " (bytes)");
-		t.newRow();
-		
-		t.addCell("Size of program headers:");
-		t.addCell(h.getProgramHeaderEntrySize() + " (bytes)");
-		t.newRow();
-		
-		t.addCell("Number of program headers:");
-		t.addCell(Short.toString(h.getProgramHeaderEntryCount()));
-		t.newRow();
-		
-		t.addCell("Size of section headers:");
-		t.addCell(h.getSectionHeaderEntrySize() + " (bytes)");
-		t.newRow();
-		
-		t.addCell("Number of section headers:");
-		t.addCell(Short.toString(h.getSectionHeaderEntryCount()));
-		t.newRow();
-		
-		t.addCell("Section header string table index:");
-		t.addCell(Short.toString(h.getSectionHeaderStringTableIndex()));
-		
-		t.printTable();
-	}
-	
 	private static void printSectionHeaders(ElfFile file) {
 		Table t = new Table("Section Headers:");
-		t.newRow();
 		
 		// Column names
 		t.addCell("[Nr]");
-		t.setAlign(Align.RIGHT);
+		t.setColAlign(Align.RIGHT);
 		
 		t.addCell("Name");
-		t.setAlign(Align.LEFT);
+		t.setColAlign(Align.LEFT);
 		
 		t.addCell("Size");
-		t.setAlign(Align.RIGHT);
+		t.setColAlign(Align.RIGHT);
 		
 		t.addCell("Type");
-		t.setAlign(Align.LEFT);
+		t.setColAlign(Align.LEFT);
 		
 		t.addCell("EntSize");
-		t.setAlign(Align.RIGHT);
+		t.setColAlign(Align.RIGHT);
 		
 		t.addCell("Address");
-		t.setAlign(Align.RIGHT);
+		t.setColAlign(Align.RIGHT);
 		
 		t.addCell("Flags");
-		t.setAlign(Align.LEFT);
+		t.setColAlign(Align.LEFT);
 		
 		t.addCell("Link");
-		t.setAlign(Align.RIGHT);
+		t.setColAlign(Align.RIGHT);
 		
 		t.addCell("Info");
-		t.setAlign(Align.RIGHT);
+		t.setColAlign(Align.RIGHT);
 		
 		t.addCell("Offset");
-		t.setAlign(Align.RIGHT);
+		t.setColAlign(Align.RIGHT);
 		
 		t.addCell("Align");
-		t.setAlign(Align.RIGHT);
+		t.setColAlign(Align.RIGHT);
 		
 		for(int i = 0; i < file.getSectionHeaders().size(); i++) {
 			t.newRow();
@@ -205,32 +132,31 @@ public class Main {
 	
 	private static void printProgramHeaders(ElfFile file) {
 		Table t = new Table("Program Headers");
-		t.newRow();
 		
 		// Column names
 		t.addCell("Type");
-		t.setAlign(Align.LEFT);
+		t.setColAlign(Align.LEFT);
 		
 		t.addCell("Offset");
-		t.setAlign(Align.RIGHT);
+		t.setColAlign(Align.RIGHT);
 		
 		t.addCell("VirtAddr");
-		t.setAlign(Align.RIGHT);
+		t.setColAlign(Align.RIGHT);
 		
 		t.addCell("PhysAddr");
-		t.setAlign(Align.RIGHT);
+		t.setColAlign(Align.RIGHT);
 		
 		t.addCell("FileSize");
-		t.setAlign(Align.RIGHT);
+		t.setColAlign(Align.RIGHT);
 		
 		t.addCell("MemSize");
-		t.setAlign(Align.RIGHT);
+		t.setColAlign(Align.RIGHT);
 		
 		t.addCell("Flags");
-		t.setAlign(Align.LEFT);
+		t.setColAlign(Align.LEFT);
 		
 		t.addCell("Align");
-		t.setAlign(Align.RIGHT);
+		t.setColAlign(Align.RIGHT);
 		
 		for(int i = 0; i < file.getProgramHeaders().size(); i++) {
 			t.newRow();
@@ -267,14 +193,13 @@ public class Main {
 	
 	public static void printSectionMapping(ElfFile file) {
 		Table t = new Table("Section to Segment mapping:");
-		t.newRow();
 		
 		// Column names
 		t.addCell("Segment");
-		t.setAlign(Align.RIGHT);
+		t.setColAlign(Align.RIGHT);
 		
 		t.addCell("Sections...");
-		t.setAlign(Align.LEFT);
+		t.setColAlign(Align.LEFT);
 		
 		for(int i = 0; i < file.getProgramHeaders().size(); i++) {
 			t.newRow();
@@ -299,32 +224,31 @@ public class Main {
 		List<ElfSymbolTableSection> sym = file.getSectionHeaders().getSectionsOfType(ElfSymbolTableSection.class);
 		for(ElfSymbolTableSection s : sym) {
 			Table t = new Table("Symbol table '" + s.getName() + "' contains " + s.getSymbolCount() + " entries:");
-			t.newRow();
 			
 			// Column names
 			t.addCell("Num:");
-			t.setAlign(Align.RIGHT);
+			t.setColAlign(Align.RIGHT);
 			
 			t.addCell("Value");
-			t.setAlign(Align.RIGHT);
+			t.setColAlign(Align.RIGHT);
 			
 			t.addCell("Size");
-			t.setAlign(Align.RIGHT);
+			t.setColAlign(Align.RIGHT);
 			
 			t.addCell("Type");
-			t.setAlign(Align.LEFT);
+			t.setColAlign(Align.LEFT);
 			
 			t.addCell("Bind");
-			t.setAlign(Align.LEFT);
+			t.setColAlign(Align.LEFT);
 			
 			t.addCell("Vis");
-			t.setAlign(Align.LEFT);
+			t.setColAlign(Align.LEFT);
 			
 			t.addCell("Ndx");
-			t.setAlign(Align.RIGHT);
+			t.setColAlign(Align.RIGHT);
 			
 			t.addCell("Name");
-			t.setAlign(Align.LEFT);
+			t.setColAlign(Align.LEFT);
 			
 			for(int i = 0; i < s.getSymbolCount(); i++) {
 				t.newRow();
@@ -357,7 +281,6 @@ public class Main {
 			}
 			
 			t.printTable();
-			System.out.println();
 		}
 	}
 	
@@ -366,27 +289,26 @@ public class Main {
 		for(ElfRelocationSection r : reloc) {
 			Table t = new Table("Relocation section '" + r.getName() + "' at offset 0x" + 
 					Long.toHexString(r.getFileOffset()) + " contains " + r.getRelocationCount() + " entries:");
-			t.newRow();
 			
 			// Column names
 			t.addCell("Offset");
-			t.setAlign(Align.RIGHT);
+			t.setColAlign(Align.RIGHT);
 			
 			t.addCell("Info");
-			t.setAlign(Align.RIGHT);
+			t.setColAlign(Align.RIGHT);
 			
 			t.addCell("Type");
-			t.setAlign(Align.LEFT);
+			t.setColAlign(Align.LEFT);
 			
 			t.addCell("SymValue");
-			t.setAlign(Align.RIGHT);
+			t.setColAlign(Align.RIGHT);
 			
 			t.addCell("SymName");
-			t.setAlign(Align.LEFT);
+			t.setColAlign(Align.LEFT);
 			
 			if(r.getType().val == ElfSection.Type.RELA) {
 				t.addCell("Addend");
-				t.setAlign(Align.RIGHT);
+				t.setColAlign(Align.RIGHT);
 			}
 			
 			for(int i = 0; i < r.getRelocationCount(); i++) {
@@ -415,7 +337,6 @@ public class Main {
 			}
 			
 			t.printTable();
-			System.out.println();
 		}
 	}
 	
@@ -423,20 +344,19 @@ public class Main {
 		List<ElfNoteSection> notes = file.getSectionHeaders().getSectionsOfType(ElfNoteSection.class);
 		for(ElfNoteSection ns : notes) {
 			Table t = new Table("Displaying notes found in: " + ns.getName());
-			t.newRow();
 			
 			// Column names
 			t.addCell("Owner");
-			t.setAlign(Align.LEFT);
+			t.setColAlign(Align.LEFT);
 			
 			t.addCell("DataSize");
-			t.setAlign(Align.RIGHT);
+			t.setColAlign(Align.RIGHT);
 			
 			t.addCell("Description");
-			t.setAlign(Align.LEFT);
+			t.setColAlign(Align.LEFT);
 			
 			t.addCell("Note");
-			t.setAlign(Align.LEFT);
+			t.setColAlign(Align.LEFT);
 			
 			t.newRow();
 			
@@ -465,7 +385,6 @@ public class Main {
 			}
 				
 			t.printTable();
-			System.out.println();
 		}
 	}
 	
@@ -475,17 +394,16 @@ public class Main {
 		for(ElfStringTableSection s : strtabs) {
 			Table t = new Table("String table section \'" + s.getName() + "\' at offset 0x" + 
 					Long.toHexString(s.getFileOffset()) + " contains " + s.getStringCount() + " entries");
-			t.newRow();
 			
 			// Column names
 			t.addCell("Offset");
-			t.setAlign(Align.RIGHT);
+			t.setColAlign(Align.RIGHT);
 			
 			t.addCell("Size");
-			t.setAlign(Align.RIGHT);
+			t.setColAlign(Align.RIGHT);
 			
 			t.addCell("String");
-			t.setAlign(Align.LEFT);
+			t.setColAlign(Align.LEFT);
 			
 			int offset = 0;
 			for(int i = 0; i < s.getStringCount();) {
@@ -511,7 +429,6 @@ public class Main {
 			}
 			
 			t.printTable();
-			System.out.println();
 		}
 	}
 	
@@ -521,17 +438,16 @@ public class Main {
 		for(ElfDynamicSection d : dyns) {
 			Table t = new Table("Dynamic section at offset " + d.getFileOffset() + " contains " + 
 					d.getEntryCount() + " entries:");
-			t.newRow();
 			
 			// Column names
 			t.addCell("Tag");
-			t.setAlign(Align.RIGHT);
+			t.setColAlign(Align.RIGHT);
 			
 			t.addCell("Type");
-			t.setAlign(Align.LEFT);
+			t.setColAlign(Align.LEFT);
 			
 			t.addCell("Name / Value");
-			t.setAlign(Align.LEFT);
+			t.setColAlign(Align.LEFT);
 			
 			for(int i = 0; i < d.getEntryCount(); i++) {
 				t.newRow();
@@ -548,7 +464,6 @@ public class Main {
 			}
 			
 			t.printTable();
-			System.out.println();
 		}
 	}
 }
