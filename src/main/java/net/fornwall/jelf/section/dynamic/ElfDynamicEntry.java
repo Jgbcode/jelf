@@ -226,6 +226,11 @@ public class ElfDynamicEntry {
 				return "?";
 			}
 		}
+		
+		@Override
+		public int hashCode() {
+			return Integer.hashCode(val);
+		}
 	}
 	
 	private Type type;
@@ -233,6 +238,9 @@ public class ElfDynamicEntry {
 	
 	private ElfDynamicSection section;
 	
+	/**
+	 * Private constructor only used in factory method
+	 */
 	private ElfDynamicEntry(ElfDynamicSection section, long offset) {
 		this.section = section;
 		
@@ -243,12 +251,25 @@ public class ElfDynamicEntry {
 		addr = parser.readIntOrLong();
 	}
 	
+	/**
+	 * Copy constructor used by subclasses
+	 */
+	protected ElfDynamicEntry(ElfDynamicEntry e) {
+		this.type = e.type;
+		this.addr = e.addr;
+		this.section = e.section;
+	}
+	
 	public static ElfDynamicEntry dynamicEntryFactory(ElfDynamicSection section, long offset) {
 		ElfDynamicEntry e = new ElfDynamicEntry(section, offset);
 		
-		/*
-		 *	TODO: Return subtypes for type specific handling 
-		 */
+		// Return subtype if necessary
+		switch(e.getType().val) {
+		case Type.NEEDED:
+			return new ElfNeededDynamicEntry(e);
+		case Type.STRTAB:
+			return new ElfStringTableDynamicEntry(e);
+		}
 		
 		return e;
 	}
@@ -279,5 +300,10 @@ public class ElfDynamicEntry {
 	 */
 	public long getAddr() {
 		return addr;
+	}
+	
+	@Override
+	public String toString() {
+		return "0x" + Long.toHexString(addr);
 	}
 }

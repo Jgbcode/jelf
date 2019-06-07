@@ -1,7 +1,9 @@
 package net.fornwall.jelf.section;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.fornwall.jelf.ElfException;
 import net.fornwall.jelf.Table;
@@ -10,16 +12,30 @@ import net.fornwall.jelf.section.dynamic.ElfDynamicEntry;
 
 public class ElfDynamicSection extends ElfSection {
 
+	// List of entries
 	private List<ElfDynamicEntry> entries;
+	
+	// Map to entries of certain types
+	private Map<Integer, List<ElfDynamicEntry>> map;
 	
 	protected ElfDynamicSection(ElfSection s) {
 		super(s);
 		
+		// List of entries
 		this.entries = new ArrayList<ElfDynamicEntry>();
+		
+		// Map of entry type to a list of entries of that type
+		this.map = new HashMap<Integer, List<ElfDynamicEntry>>();
+		
 		long offset = super.getFileOffset();
 		ElfDynamicEntry e = ElfDynamicEntry.dynamicEntryFactory(this, offset);
 		while(e.getType().val != ElfDynamicEntry.Type.NULL) {
 			entries.add(e);
+			
+			if(!map.containsKey(e.getType().val))
+				map.put(e.getType().val, new ArrayList<ElfDynamicEntry>());
+			map.get(e.getType().val).add(e);
+			
 			e = ElfDynamicEntry.dynamicEntryFactory(this, offset += super.getEntrySize());
 		}
 		
@@ -53,11 +69,12 @@ public class ElfDynamicSection extends ElfSection {
 	 * @return Returns a list of all entries in the dynamic section which are of the provided type
 	 */
 	public List<ElfDynamicEntry> getEntriesOfType(ElfDynamicEntry.Type type) {
+		if(!map.containsKey(type.val))
+			return new ArrayList<ElfDynamicEntry>();
+		
 		List<ElfDynamicEntry> result = new ArrayList<ElfDynamicEntry>();
-		for(ElfDynamicEntry e : entries) {
-			if(e.getType().val == type.val)
-				result.add(e);
-		}
+		for(ElfDynamicEntry e : map.get(type.val))
+			result.add(e);
 		return result;
 	}
 	
@@ -80,13 +97,20 @@ public class ElfDynamicSection extends ElfSection {
 	 * @return Returns a list of all entries in the dynamic section which are of both the
 	 * 	provided type and class
 	 */
-	public <T extends ElfDynamicEntry> List<T> getEntriesOfType(Type type, Class<T> c) {
+	public <T extends ElfDynamicEntry> List<T> getEntriesOfType(ElfDynamicEntry.Type type, Class<T> c) {
 		List<T> result = new ArrayList<T>();
-		for(ElfDynamicEntry e : entries) {
-			if(e.getType().val == type.val && c.isInstance(e))
+		for(ElfDynamicEntry e : this.getEntriesOfType(type)) {
+			if(c.isInstance(e))
 				result.add(c.cast(e));
 		}
 		return result;
+	}
+	
+	public ElfHashTableSection getHashTable() {
+		if(!map.containsKey(ElfDynamicEntry.Type.HASH))
+			throw new ElfException("No dynamic hash table found");
+		
+		
 	}
 	
 	/**
@@ -119,7 +143,8 @@ public class ElfDynamicSection extends ElfSection {
 			// Type
 			t.addCell("(" + e.getType().name() + ")");
 			
-			t.addCell("0x" + e.getAddr());
+			// Value
+			t.addCell(e.toString());
 		}
 		
 		return t;
