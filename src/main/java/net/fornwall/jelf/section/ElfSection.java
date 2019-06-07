@@ -368,6 +368,7 @@ public class ElfSection {
 	public static ElfSection sectionFactory(final ElfFile file, long offset) {
 		ElfSection s = new ElfSection(file, offset);
 		
+		// Return subtypes for type specific handling
 		switch (s.type.val) {
 		case Type.SYMTAB:
 		case Type.DYNSYM:
@@ -379,14 +380,15 @@ public class ElfSection {
 		case Type.REL:
 		case Type.RELA:
 			return new ElfRelocationSection(s);
-		//case Type.DYNAMIC:
+		case Type.DYNAMIC:
+			return new ElfDynamicSection(s);
 		case Type.NOTE:
 			return new ElfNoteSection(s);
 		case Type.NOBITS:
 			return new ElfNoBitsSection(s);
-		default:
-			return s;
 		}
+		
+		return s;
 	}
 	
 	/**

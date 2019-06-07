@@ -182,11 +182,11 @@ public class ElfSectionHeaders {
 	 * @param c the type of section to fetch
 	 * @return Returns a list of sections that are an instance of the provided class
 	 */
-	public List<ElfSection> getSectionsOfType(Class<? extends ElfSection> c) {
-		List<ElfSection> result = new ArrayList<ElfSection>();
+	public <T extends ElfSection> List<T> getSectionsOfType(Class<T> c) {
+		List<T> result = new ArrayList<T>();
 		for(ElfSection s : sections) {
 			if(c.isInstance(s))
-				result.add(s);
+				result.add(c.cast(s));
 		}
 		return result;
 	}

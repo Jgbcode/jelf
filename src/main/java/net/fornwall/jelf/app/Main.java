@@ -6,11 +6,13 @@ import java.util.List;
 import net.fornwall.jelf.ElfFile;
 import net.fornwall.jelf.ElfHeader;
 import net.fornwall.jelf.app.Table.Align;
+import net.fornwall.jelf.section.ElfDynamicSection;
 import net.fornwall.jelf.section.ElfNoteSection;
 import net.fornwall.jelf.section.ElfRelocationSection;
 import net.fornwall.jelf.section.ElfSection;
 import net.fornwall.jelf.section.ElfStringTableSection;
 import net.fornwall.jelf.section.ElfSymbolTableSection;
+import net.fornwall.jelf.section.dynamic.ElfDynamicEntry;
 import net.fornwall.jelf.section.note.ElfNote;
 import net.fornwall.jelf.section.relocation.ElfAddendRelocation;
 import net.fornwall.jelf.section.relocation.ElfRelocation;
@@ -49,6 +51,8 @@ public class Main {
 		printNoteSections(file);
 		System.out.println();
 		printStringTables(file);
+		System.out.println();
+		printDynamicSections(file);
 	}
 	
 	private static void printHeader(ElfFile file) {
@@ -300,10 +304,8 @@ public class Main {
 	}
 	
 	public static void printSymbolTables(ElfFile file) {
-		List<ElfSection> sym = file.getSectionHeaders().getSectionsOfType(ElfSymbolTableSection.class);
-		for(ElfSection es : sym) {
-			ElfSymbolTableSection s = (ElfSymbolTableSection)es;
-			
+		List<ElfSymbolTableSection> sym = file.getSectionHeaders().getSectionsOfType(ElfSymbolTableSection.class);
+		for(ElfSymbolTableSection s : sym) {
 			Table t = new Table("Symbol table '" + s.getName() + "' contains " + s.getSymbolCount() + " entries:");
 			t.newRow();
 			
@@ -368,10 +370,8 @@ public class Main {
 	}
 	
 	public static void printRelocationSections(ElfFile file) {
-		List<ElfSection> reloc = file.getSectionHeaders().getSectionsOfType(ElfRelocationSection.class);
-		for(ElfSection s : reloc) {
-			ElfRelocationSection r = (ElfRelocationSection)s;
-			
+		List<ElfRelocationSection> reloc = file.getSectionHeaders().getSectionsOfType(ElfRelocationSection.class);
+		for(ElfRelocationSection r : reloc) {
 			Table t = new Table("Relocation section '" + r.getName() + "' at offset 0x" + 
 					Long.toHexString(r.getFileOffset()) + " contains " + r.getRelocationCount() + " entries:");
 			t.newRow();
@@ -392,7 +392,7 @@ public class Main {
 			t.addCell("SymName");
 			t.setAlign(Align.LEFT);
 			
-			if(s.getType().val == ElfSection.Type.RELA) {
+			if(r.getType().val == ElfSection.Type.RELA) {
 				t.addCell("Addend");
 				t.setAlign(Align.RIGHT);
 			}
@@ -428,10 +428,8 @@ public class Main {
 	}
 	
 	public static void printNoteSections(ElfFile file) {
-		List<ElfSection> notes = file.getSectionHeaders().getSectionsOfType(ElfNoteSection.class);
-		for(ElfSection s : notes) {
-			ElfNoteSection ns = (ElfNoteSection)s;
-			
+		List<ElfNoteSection> notes = file.getSectionHeaders().getSectionsOfType(ElfNoteSection.class);
+		for(ElfNoteSection ns : notes) {
 			Table t = new Table("Displaying notes found in: " + ns.getName());
 			t.newRow();
 			
@@ -480,11 +478,9 @@ public class Main {
 	}
 	
 	public static void printStringTables(ElfFile file) {
-		List<ElfSection> strtabs = file.getSectionHeaders().getSectionsOfType(ElfStringTableSection.class);
+		List<ElfStringTableSection> strtabs = file.getSectionHeaders().getSectionsOfType(ElfStringTableSection.class);
 		
-		for(ElfSection sec : strtabs) {
-			ElfStringTableSection s = (ElfStringTableSection)sec;
-			
+		for(ElfStringTableSection s : strtabs) {
 			Table t = new Table("String table section \'" + s.getName() + "\' at offset 0x" + 
 					Long.toHexString(s.getFileOffset()) + " contains " + s.getStringCount() + " entries");
 			t.newRow();
@@ -520,6 +516,43 @@ public class Main {
 				t.addCell(str);
 				
 				offset += str.length();
+			}
+			
+			t.printTable();
+			System.out.println();
+		}
+	}
+	
+	public static void printDynamicSections(ElfFile file) {
+		List<ElfDynamicSection> dyns = file.getSectionHeaders().getSectionsOfType(ElfDynamicSection.class);
+		
+		for(ElfDynamicSection d : dyns) {
+			Table t = new Table("Dynamic section at offset " + d.getFileOffset() + " contains " + 
+					d.getEntryCount() + " entries:");
+			t.newRow();
+			
+			// Column names
+			t.addCell("Tag");
+			t.setAlign(Align.RIGHT);
+			
+			t.addCell("Type");
+			t.setAlign(Align.LEFT);
+			
+			t.addCell("Name / Value");
+			t.setAlign(Align.LEFT);
+			
+			for(int i = 0; i < d.getEntryCount(); i++) {
+				t.newRow();
+				
+				ElfDynamicEntry e = d.getEntry(i);
+				
+				// Tag
+				t.addCell("0x" + Long.toHexString(e.getType().val));
+				
+				// Type
+				t.addCell("(" + e.getType().name() + ")");
+				
+				t.addCell("0x" + e.getAddr());
 			}
 			
 			t.printTable();
