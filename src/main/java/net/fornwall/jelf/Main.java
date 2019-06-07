@@ -1,10 +1,9 @@
-package net.fornwall.jelf.app;
+package net.fornwall.jelf;
 
 import java.io.File;
 import java.util.List;
 
-import net.fornwall.jelf.ElfFile;
-import net.fornwall.jelf.app.Table.Align;
+import net.fornwall.jelf.Table.Align;
 import net.fornwall.jelf.section.ElfDynamicSection;
 import net.fornwall.jelf.section.ElfNoteSection;
 import net.fornwall.jelf.section.ElfRelocationSection;
@@ -36,7 +35,7 @@ public class Main {
 
 		// Similar to readelf -a <elf_file>
 		System.out.println(file.getHeader());
-		printSectionHeaders(file);
+		System.out.println(file.getSectionHeaders());
 		printProgramHeaders(file);
 		printSectionMapping(file);
 		printSymbolTables(file);
@@ -44,90 +43,6 @@ public class Main {
 		printNoteSections(file);
 		printStringTables(file);
 		printDynamicSections(file);
-	}
-	
-	private static void printSectionHeaders(ElfFile file) {
-		Table t = new Table("Section Headers:");
-		
-		// Column names
-		t.addCell("[Nr]");
-		t.setColAlign(Align.RIGHT);
-		
-		t.addCell("Name");
-		t.setColAlign(Align.LEFT);
-		
-		t.addCell("Size");
-		t.setColAlign(Align.RIGHT);
-		
-		t.addCell("Type");
-		t.setColAlign(Align.LEFT);
-		
-		t.addCell("EntSize");
-		t.setColAlign(Align.RIGHT);
-		
-		t.addCell("Address");
-		t.setColAlign(Align.RIGHT);
-		
-		t.addCell("Flags");
-		t.setColAlign(Align.LEFT);
-		
-		t.addCell("Link");
-		t.setColAlign(Align.RIGHT);
-		
-		t.addCell("Info");
-		t.setColAlign(Align.RIGHT);
-		
-		t.addCell("Offset");
-		t.setColAlign(Align.RIGHT);
-		
-		t.addCell("Align");
-		t.setColAlign(Align.RIGHT);
-		
-		for(int i = 0; i < file.getSectionHeaders().size(); i++) {
-			t.newRow();
-			
-			ElfSection s = file.getSectionHeaders().getSectionByIndex(i);
-			
-			// Index
-			t.addCell("[" + i + "]");
-			
-			// Name
-			t.addCell(s.getName());
-			
-			// Size
-			t.addCell("0x" + Long.toHexString(s.getFileSize()));
-			
-			// Type
-			t.addCell(s.getType().name());
-			
-			// EntSize
-			t.addCell("0x" + Long.toHexString(s.getEntrySize()));
-			
-			// Address
-			t.addCell("0x" + Long.toHexString(s.getAddress()));
-			
-			// Flags
-			t.addCell(s.getFlags().name());
-			
-			// Link
-			t.addCell(Integer.toString(s.getLinkIndex()));
-			
-			// Info
-			t.addCell(Integer.toString(s.getInfo()));
-			
-			// Offset
-			t.addCell("0x" + Long.toHexString(s.getFileOffset()));
-			
-			// Align
-			t.addCell(Long.toString(s.getAlignment()));
-		}
-		
-		t.printTable();
-		
-		// Print flag key
-		System.out.println("Key to Flags:");
-		for(String s : ElfSection.Flag.getNameKey().split("\n"))
-			System.out.println(" " + s);
 	}
 	
 	private static void printProgramHeaders(ElfFile file) {

@@ -3,8 +3,7 @@ package net.fornwall.jelf;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.fornwall.jelf.app.Table;
-import net.fornwall.jelf.app.Table.Align;
+import net.fornwall.jelf.Table.Align;
 import net.fornwall.jelf.segment.ElfSegment;
 
 public class ElfHeader {

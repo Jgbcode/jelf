@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import net.fornwall.jelf.Table.Align;
 import net.fornwall.jelf.section.ElfSection;
 import net.fornwall.jelf.section.ElfStringTableSection;
 import net.fornwall.jelf.section.ElfSymbolTableSection;
@@ -202,5 +203,98 @@ public class ElfSectionHeaders {
 				result.add(s);
 		}
 		return result;
+	}
+	
+	/**
+	 * See {@link #toString()} to get the formatted string directly
+	 * 
+	 * @return Returns a {@link Table} object that contains the formatted contents of this header.
+	 */
+	public Table getFormattedTable() {
+		Table t = new Table("Section Headers:");
+		
+		// Column names
+		t.addCell("[Nr]");
+		t.setColAlign(Align.RIGHT);
+		
+		t.addCell("Name");
+		t.setColAlign(Align.LEFT);
+		
+		t.addCell("Size");
+		t.setColAlign(Align.RIGHT);
+		
+		t.addCell("Type");
+		t.setColAlign(Align.LEFT);
+		
+		t.addCell("EntSize");
+		t.setColAlign(Align.RIGHT);
+		
+		t.addCell("Address");
+		t.setColAlign(Align.RIGHT);
+		
+		t.addCell("Flags");
+		t.setColAlign(Align.LEFT);
+		
+		t.addCell("Link");
+		t.setColAlign(Align.RIGHT);
+		
+		t.addCell("Info");
+		t.setColAlign(Align.RIGHT);
+		
+		t.addCell("Offset");
+		t.setColAlign(Align.RIGHT);
+		
+		t.addCell("Align");
+		t.setColAlign(Align.RIGHT);
+		
+		for(int i = 0; i < file.getSectionHeaders().size(); i++) {
+			t.newRow();
+			
+			ElfSection s = file.getSectionHeaders().getSectionByIndex(i);
+			
+			// Index
+			t.addCell("[" + i + "]");
+			
+			// Name
+			t.addCell(s.getName());
+			
+			// Size
+			t.addCell("0x" + Long.toHexString(s.getFileSize()));
+			
+			// Type
+			t.addCell(s.getType().name());
+			
+			// EntSize
+			t.addCell("0x" + Long.toHexString(s.getEntrySize()));
+			
+			// Address
+			t.addCell("0x" + Long.toHexString(s.getAddress()));
+			
+			// Flags
+			t.addCell(s.getFlags().name());
+			
+			// Link
+			t.addCell(Integer.toString(s.getLinkIndex()));
+			
+			// Info
+			t.addCell(Integer.toString(s.getInfo()));
+			
+			// Offset
+			t.addCell("0x" + Long.toHexString(s.getFileOffset()));
+			
+			// Align
+			t.addCell(Long.toString(s.getAlignment()));
+		}
+		
+		return t;
+	}
+	
+	@Override
+	public String toString() {
+		// Add a key for the flags
+		String flagKey = "Key to Flags:\n";
+		for(String s : ElfSection.Flag.getNameKey().split("\n"))
+			flagKey += " " + s + "\n";
+		return this.getFormattedTable().toString() + flagKey;
 	}
 }
