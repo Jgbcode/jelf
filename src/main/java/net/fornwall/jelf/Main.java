@@ -50,7 +50,11 @@ public class Main {
 		for(ElfRelocationSection s : file.getSectionHeaders().getSectionsOfType(ElfRelocationSection.class))
 			System.out.println(s);
 		
-		printNoteSections(file);
+		// Print note sections
+		for(ElfNoteSection s : file.getSectionHeaders().getSectionsOfType(ElfNoteSection.class))
+			System.out.println(s);
+		
+		
 		printStringTables(file);
 		printDynamicSections(file);
 	}
@@ -82,54 +86,6 @@ public class Main {
 		}
 		
 		t.printTable();
-	}
-	
-	public static void printNoteSections(ElfFile file) {
-		List<ElfNoteSection> notes = file.getSectionHeaders().getSectionsOfType(ElfNoteSection.class);
-		for(ElfNoteSection ns : notes) {
-			Table t = new Table("Displaying notes found in: " + ns.getName());
-			
-			// Column names
-			t.addCell("Owner");
-			t.setColAlign(Align.LEFT);
-			
-			t.addCell("DataSize");
-			t.setColAlign(Align.RIGHT);
-			
-			t.addCell("Description");
-			t.setColAlign(Align.LEFT);
-			
-			t.addCell("Note");
-			t.setColAlign(Align.LEFT);
-			
-			t.newRow();
-			
-			for(int i = 0; i < ns.getNoteCount(); i++) {
-				ElfNote n = ns.getNote(i);
-				
-				// Owner
-				t.addCell(n.getNoteName());
-				
-				// Data size
-				t.addCell("0x" + Integer.toHexString(n.getDescSize()));
-				
-				// Description
-				t.addCell(Integer.toString(n.getNoteType()));
-				
-				// Note
-				String str = "";
-				for(int j = 0; j < n.getDescSize(); j++) {
-					str = Integer.toHexString(n.getDescByte(i) & 0xf) + str;
-					str = Integer.toHexString(n.getDescByte(i) >> 4) + str;
-				}
-				t.addCell(str);
-				
-				// Most notes don't seem to contain string data
-				// t.addCell(n.getDescString());
-			}
-				
-			t.printTable();
-		}
 	}
 	
 	public static void printStringTables(ElfFile file) {
