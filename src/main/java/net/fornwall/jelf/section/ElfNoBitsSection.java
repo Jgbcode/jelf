@@ -20,6 +20,7 @@ public class ElfNoBitsSection extends ElfSection {
 	/**
 	 * @return Returns the memory size of this NOBITS section
 	 */
+	@Override
 	public long getMemSize() {
 		return super.getFileSize();
 	}

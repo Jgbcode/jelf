@@ -180,6 +180,29 @@ public class ElfSectionHeaders {
 	}
 	
 	/**
+	 * @param addr the address to look at
+	 * @return Returns the section index of the section at the provided address
+	 * @throws ElfException if the no such section exists
+	 */
+	public int getSectionIndexAtAddr(long addr) {
+		for(int i = 0; i < sections.length; i++) {
+			if(addr >= sections[i].getAddress() && addr < sections[i].getAddress() + sections[i].getMemSize())
+				return i;
+		}
+		
+		throw new ElfException("No section exists at address 0x" + Long.toHexString(addr));
+	}
+	
+	/**
+	 * @param addr the address to look at
+	 * @return Returns the section at the provided address
+	 * @throws ElfException if the no such section exists
+	 */
+	public ElfSection getSectionAtAddr(long addr) {
+		return sections[getSectionIndexAtAddr(addr)];
+	}
+	
+	/**
 	 * @param c the type of section to fetch
 	 * @return Returns a list of sections that are an instance of the provided class
 	 */

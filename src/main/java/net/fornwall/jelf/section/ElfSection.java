@@ -239,8 +239,16 @@ public class ElfSection {
 		 * @param f - the flags to test for
 		 * @return Returns true only if all of the flags in f are also set in this Flag object
 		 */
+		public boolean test(long f) {
+			return (this.val & f) == f;
+		}
+		
+		/**
+		 * @param f - the flags to test for
+		 * @return Returns true only if all of the flags in f are also set in this Flag object
+		 */
 		public boolean test(Flag f) {
-			return (this.val & f.val) == f.val;
+			return this.test(f.val);
 		}
 		
 		public Flag(long val) {
@@ -449,6 +457,18 @@ public class ElfSection {
 	 */
 	public long getFileSize() {
 		return size;
+	}
+	
+	/**
+	 * This member gives the section's memory size in bytes
+	 * 
+	 * @return Size of the section in memory, returns 0 if the section is not to be allocated 
+	 * i.e. {@link Flag#ALLOC} is not set
+	 */
+	public long getMemSize() { 
+		if(this.flags.test(Flag.ALLOC))
+			return size;
+		return 0;
 	}
 	
 	/**

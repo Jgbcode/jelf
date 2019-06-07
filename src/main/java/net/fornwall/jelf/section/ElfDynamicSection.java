@@ -9,6 +9,7 @@ import net.fornwall.jelf.ElfException;
 import net.fornwall.jelf.Table;
 import net.fornwall.jelf.Table.Align;
 import net.fornwall.jelf.section.dynamic.ElfDynamicEntry;
+import net.fornwall.jelf.section.dynamic.ElfStringTableDynamicEntry;
 
 public class ElfDynamicSection extends ElfSection {
 
@@ -65,6 +66,40 @@ public class ElfDynamicSection extends ElfSection {
 	}
 	
 	/**
+	 * Returns the requested type and guarantees that one and only one
+	 * of the requested types exist. This is useful for fetching singleton
+	 * entries like {@link ElfDynamicEntry.Type#HASH} and {@link ElfDynamicEntry.Type#STRTAB}
+	 * 
+	 * @param type the type of entry to get
+	 * @param c the class of entry to get. The return type will be of this same class
+	 * @return Returns the requested {@link ElfDynamicEntry}
+	 * @throws ElfException An exception will be throw if no entry exists or
+	 * 	more than one entry exist.
+	 */
+	public <T extends ElfDynamicEntry> T getUniqueEntryOfType(ElfDynamicEntry.Type type, Class<T> c) {
+		List<ElfDynamicEntry> l = map.get(type.val);
+		
+		if(l == null || l.isEmpty())
+			throw new ElfException("No dynamic entry of type " + type.name());
+
+		T tmp = null;
+		for(ElfDynamicEntry e : l) {
+			if(c.isInstance(e)) {
+				if(tmp != null)
+					throw new ElfException("Duplicate entries of type " + type.name());
+				tmp = c.cast(e);
+			}
+		}
+		
+		if(tmp == null) {
+			throw new ElfException("Did not find entry of type " + type.name() + 
+					" and instance " + c.getName());
+		}
+		
+		return tmp;
+	}
+	
+	/**
 	 * @param type the type of entries to fetch
 	 * @return Returns a list of all entries in the dynamic section which are of the provided type
 	 */
@@ -106,11 +141,9 @@ public class ElfDynamicSection extends ElfSection {
 		return result;
 	}
 	
-	public ElfHashTableSection getHashTable() {
-		if(!map.containsKey(ElfDynamicEntry.Type.HASH))
-			throw new ElfException("No dynamic hash table found");
-		
-		
+	public ElfStringTableSection getStringTable() {
+		return this.getUniqueEntryOfType(new ElfDynamicEntry.Type(ElfDynamicEntry.Type.STRTAB), 
+				ElfStringTableDynamicEntry.class).getStringTable();
 	}
 	
 	/**
@@ -119,7 +152,7 @@ public class ElfDynamicSection extends ElfSection {
 	 * @return Returns a {@link Table} object that contains the formatted contents of this section.
 	 */
 	public Table getFormattedTable() {
-		Table t = new Table("Dynamic section at offset " + getFileOffset() + " contains " + 
+		Table t = new Table("Dynamic section at offset 0x" + Long.toHexString(getFileOffset()) + " contains " + 
 				getEntryCount() + " entries:");
 		
 		// Column names

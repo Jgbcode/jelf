@@ -10,11 +10,11 @@ public class ElfNeededDynamicEntry extends ElfDynamicEntry {
 	 * @return Returns the name of the needed library specified by this entry
 	 */
 	public String getLib() {
-		
+		return super.getSection().getStringTable().getString((int)super.getVal());
 	}
 	
 	@Override
 	public String toString() {
-		
+		return "Shared library: [" + getLib() + "]";
 	}
 }

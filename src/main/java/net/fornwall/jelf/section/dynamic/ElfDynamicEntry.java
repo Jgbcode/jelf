@@ -234,7 +234,7 @@ public class ElfDynamicEntry {
 	}
 	
 	private Type type;
-	private long addr;
+	private long val;
 	
 	private ElfDynamicSection section;
 	
@@ -248,7 +248,7 @@ public class ElfDynamicEntry {
 		
 		parser.seek(offset);
 		type = new Type((int)parser.readIntOrLong());
-		addr = parser.readIntOrLong();
+		val = parser.readIntOrLong();
 	}
 	
 	/**
@@ -256,7 +256,7 @@ public class ElfDynamicEntry {
 	 */
 	protected ElfDynamicEntry(ElfDynamicEntry e) {
 		this.type = e.type;
-		this.addr = e.addr;
+		this.val = e.val;
 		this.section = e.section;
 	}
 	
@@ -298,12 +298,12 @@ public class ElfDynamicEntry {
 	/**
 	 * @return Returns the address of offset associated with this entry
 	 */
-	public long getAddr() {
-		return addr;
+	public long getVal() {
+		return val;
 	}
 	
 	@Override
 	public String toString() {
-		return "0x" + Long.toHexString(addr);
+		return "0x" + Long.toHexString(val);
 	}
 }
