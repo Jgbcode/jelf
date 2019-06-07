@@ -1,6 +1,9 @@
 package net.fornwall.jelf.section;
 
 import net.fornwall.jelf.ElfException;
+import net.fornwall.jelf.Table;
+import net.fornwall.jelf.Table.Align;
+import net.fornwall.jelf.section.relocation.ElfAddendRelocation;
 import net.fornwall.jelf.section.relocation.ElfRelocation;
 
 public class ElfRelocationSection extends ElfSection {
@@ -65,5 +68,68 @@ public class ElfRelocationSection extends ElfSection {
 	 */
 	public ElfSection getSection() {
 		return super.getFile().getSectionHeaders().getSectionByIndex(super.getInfo());
+	}
+	
+	/**
+	 * See {@link #toString()} to get the formatted string directly
+	 * 
+	 * @return Returns a {@link Table} object that contains the formatted contents of this header.
+	 */
+	public Table getFormattedTable() {
+		Table t = new Table("Relocation section '" + getName() + "' at offset 0x" + 
+				Long.toHexString(getFileOffset()) + " contains " + getRelocationCount() + " entries:");
+		
+		// Column names
+		t.addCell("Offset");
+		t.setColAlign(Align.RIGHT);
+		
+		t.addCell("Info");
+		t.setColAlign(Align.RIGHT);
+		
+		t.addCell("Type");
+		t.setColAlign(Align.LEFT);
+		
+		t.addCell("SymValue");
+		t.setColAlign(Align.RIGHT);
+		
+		t.addCell("SymName");
+		t.setColAlign(Align.LEFT);
+		
+		if(getType().val == ElfSection.Type.RELA) {
+			t.addCell("Addend");
+			t.setColAlign(Align.RIGHT);
+		}
+		
+		for(int i = 0; i < getRelocationCount(); i++) {
+			t.newRow();
+			
+			ElfRelocation re = getRelocation(i);
+			
+			// Offset
+			t.addCell("0x" + Long.toHexString(re.getOffset()));
+			
+			// Info
+			t.addCell("0x" + Long.toHexString(re.getInfo()));
+			
+			// Type
+			t.addCell(re.getType().name());
+			
+			// Symbol value
+			t.addCell(Long.toHexString(re.getSymbol().getValue()));
+			
+			// Symbol name
+			t.addCell(re.getSymbol().getName());
+			
+			if(re instanceof ElfAddendRelocation) {
+				t.addCell("0x" + Long.toHexString(((ElfAddendRelocation)re).getAddend()));
+			}
+		}
+		
+		return t;
+	}
+	
+	@Override
+	public String toString() {
+		return this.getFormattedTable().toString();
 	}
 }

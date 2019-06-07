@@ -12,9 +12,6 @@ import net.fornwall.jelf.section.ElfStringTableSection;
 import net.fornwall.jelf.section.ElfSymbolTableSection;
 import net.fornwall.jelf.section.dynamic.ElfDynamicEntry;
 import net.fornwall.jelf.section.note.ElfNote;
-import net.fornwall.jelf.section.relocation.ElfAddendRelocation;
-import net.fornwall.jelf.section.relocation.ElfRelocation;
-import net.fornwall.jelf.section.symbol.ElfSymbol;
 
 public class Main {
 
@@ -32,7 +29,7 @@ public class Main {
 
 		ElfFile file = new ElfFile(new File(args[0]));
 
-		// Similar to readelf -a <elf_file>
+		// Similar output to readelf -a <elf_file>
 		
 		// Print header data
 		System.out.println(file.getHeader());
@@ -42,13 +39,17 @@ public class Main {
 		
 		// Print segment data
 		System.out.println(file.getProgramHeaders());
+		
 		printSectionMapping(file);
 		
-		// Print symbol tables
+		// Print symbol table sections
 		for(ElfSymbolTableSection s : file.getSectionHeaders().getSectionsOfType(ElfSymbolTableSection.class))
 			System.out.println(s);
 		
-		printRelocationSections(file);
+		// Print relocation sections
+		for(ElfRelocationSection s : file.getSectionHeaders().getSectionsOfType(ElfRelocationSection.class))
+			System.out.println(s);
+		
 		printNoteSections(file);
 		printStringTables(file);
 		printDynamicSections(file);
@@ -81,126 +82,6 @@ public class Main {
 		}
 		
 		t.printTable();
-	}
-	
-	public static void printSymbolTables(ElfFile file) {
-		List<ElfSymbolTableSection> sym = file.getSectionHeaders().getSectionsOfType(ElfSymbolTableSection.class);
-		for(ElfSymbolTableSection s : sym) {
-			Table t = new Table("Symbol table '" + s.getName() + "' contains " + s.getSymbolCount() + " entries:");
-			
-			// Column names
-			t.addCell("Num:");
-			t.setColAlign(Align.RIGHT);
-			
-			t.addCell("Value");
-			t.setColAlign(Align.RIGHT);
-			
-			t.addCell("Size");
-			t.setColAlign(Align.RIGHT);
-			
-			t.addCell("Type");
-			t.setColAlign(Align.LEFT);
-			
-			t.addCell("Bind");
-			t.setColAlign(Align.LEFT);
-			
-			t.addCell("Vis");
-			t.setColAlign(Align.LEFT);
-			
-			t.addCell("Ndx");
-			t.setColAlign(Align.RIGHT);
-			
-			t.addCell("Name");
-			t.setColAlign(Align.LEFT);
-			
-			for(int i = 0; i < s.getSymbolCount(); i++) {
-				t.newRow();
-				
-				ElfSymbol e = s.getSymbol(i);
-				
-				// Number
-				t.addCell(i + ":");
-				
-				// Value
-				t.addCell("0x" + Long.toHexString(e.getValue()));
-				
-				// Size
-				t.addCell(Long.toString(e.getSize()));
-				
-				// Type
-				t.addCell(e.getType().name());
-				
-				// Bind
-				t.addCell(e.getBinding().name());
-				
-				// Visibility
-				t.addCell(e.getOther().name());
-				
-				// Section Index
-				t.addCell(e.getSectionHeaderIndex().name());
-				
-				// Name
-				t.addCell(e.getName());
-			}
-			
-			t.printTable();
-		}
-	}
-	
-	public static void printRelocationSections(ElfFile file) {
-		List<ElfRelocationSection> reloc = file.getSectionHeaders().getSectionsOfType(ElfRelocationSection.class);
-		for(ElfRelocationSection r : reloc) {
-			Table t = new Table("Relocation section '" + r.getName() + "' at offset 0x" + 
-					Long.toHexString(r.getFileOffset()) + " contains " + r.getRelocationCount() + " entries:");
-			
-			// Column names
-			t.addCell("Offset");
-			t.setColAlign(Align.RIGHT);
-			
-			t.addCell("Info");
-			t.setColAlign(Align.RIGHT);
-			
-			t.addCell("Type");
-			t.setColAlign(Align.LEFT);
-			
-			t.addCell("SymValue");
-			t.setColAlign(Align.RIGHT);
-			
-			t.addCell("SymName");
-			t.setColAlign(Align.LEFT);
-			
-			if(r.getType().val == ElfSection.Type.RELA) {
-				t.addCell("Addend");
-				t.setColAlign(Align.RIGHT);
-			}
-			
-			for(int i = 0; i < r.getRelocationCount(); i++) {
-				t.newRow();
-				
-				ElfRelocation re = r.getRelocation(i);
-				
-				// Offset
-				t.addCell("0x" + Long.toHexString(re.getOffset()));
-				
-				// Info
-				t.addCell("0x" + Long.toHexString(re.getInfo()));
-				
-				// Type
-				t.addCell(re.getType().name());
-				
-				// Symbol value
-				t.addCell(Long.toHexString(re.getSymbol().getValue()));
-				
-				// Symbol name
-				t.addCell(re.getSymbol().getName());
-				
-				if(re instanceof ElfAddendRelocation) {
-					t.addCell("0x" + Long.toHexString(((ElfAddendRelocation)re).getAddend()));
-				}
-			}
-			
-			t.printTable();
-		}
 	}
 	
 	public static void printNoteSections(ElfFile file) {
