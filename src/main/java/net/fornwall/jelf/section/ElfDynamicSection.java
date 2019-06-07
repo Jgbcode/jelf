@@ -62,6 +62,34 @@ public class ElfDynamicSection extends ElfSection {
 	}
 	
 	/**
+	 * @param c the class of entries to fetch
+	 * @return Returns a list of all entries in the dynamic section which are of the provided class
+	 */
+	public <T extends ElfDynamicEntry> List<T> getEntriesOfType(Class<T> c) {
+		List<T> result = new ArrayList<T>();
+		for(ElfDynamicEntry e : entries) {
+			if(c.isInstance(e))
+				result.add(c.cast(e));
+		}
+		return result;
+	}
+	
+	/**
+	 * @param type the type of entries to fetch
+	 * @param c the class of entries to fetch
+	 * @return Returns a list of all entries in the dynamic section which are of both the
+	 * 	provided type and class
+	 */
+	public <T extends ElfDynamicEntry> List<T> getEntriesOfType(Type type, Class<T> c) {
+		List<T> result = new ArrayList<T>();
+		for(ElfDynamicEntry e : entries) {
+			if(e.getType().val == type.val && c.isInstance(e))
+				result.add(c.cast(e));
+		}
+		return result;
+	}
+	
+	/**
 	 * See {@link #toString()} to get the formatted string directly
 	 * 
 	 * @return Returns a {@link Table} object that contains the formatted contents of this section.

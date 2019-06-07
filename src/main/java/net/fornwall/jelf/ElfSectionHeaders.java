@@ -75,7 +75,7 @@ public class ElfSectionHeaders {
 	 * @return Returns a section that can be casted to the requested type
 	 * @throws ElfException if the cast is invalid
 	 */
-	public ElfSection getSectionByIndex(int index, Class<? extends ElfSection> c) {
+	public <T extends ElfSection> T getSectionByIndex(int index, Class<T> c) {
 		ElfSection s = getSectionByIndex(index);
 		if(s == null)
 			return null;
@@ -100,7 +100,7 @@ public class ElfSectionHeaders {
 	 * @return Returns a section that can be casted to the requested type
 	 * @throws ElfException if the cast is invalid
 	 */
-	public ElfSection getSectionByName(String name, Class<? extends ElfSection> c) {
+	public <T extends ElfSection> T getSectionByName(String name, Class<T> c) {
 		ElfSection s = getSectionByName(name);
 		if(s == null)
 			return null;

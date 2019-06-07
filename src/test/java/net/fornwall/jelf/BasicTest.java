@@ -1,5 +1,6 @@
 package net.fornwall.jelf;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
@@ -11,12 +12,9 @@ import net.fornwall.jelf.section.ElfDynamicSection;
 import net.fornwall.jelf.section.ElfSection;
 
 public class BasicTest {
-
-	private ElfFile parseFile(String name) throws ElfException, FileNotFoundException, IOException {
-		return ElfFile.fromStream(BasicTest.class.getResourceAsStream("/" + name));
-	}
-
 	private static void assertSectionNames(ElfFile file, String... expectedSectionNames) throws IOException {
+		Assert.assertEquals(expectedSectionNames.length, file.getSectionHeaders().size());
+		
 		for (int i = 0; i < expectedSectionNames.length; i++) {
 			String expected = expectedSectionNames[i];
 			String actual = file.getSectionHeaders().getSectionByIndex(i).getName();
@@ -30,9 +28,9 @@ public class BasicTest {
 
 	@Test
 	public void testAndroidArmBinTset() throws ElfException, FileNotFoundException, IOException {
-		ElfFile file = parseFile("android_arm_tset");
-		ElfHeader h = file.getHeader();
+		ElfFile file = new ElfFile(new File(BasicTest.class.getResource("android_arm_tset").getPath()));
 		
+		ElfHeader h = file.getHeader();
 		Assert.assertEquals(ElfHeader.BitClass.ELFCLASS32, h.getBitClass());
 		Assert.assertEquals(ElfHeader.DataFormat.ELFDATA2LSB, h.getDataFormat());
 		Assert.assertEquals(ElfHeader.FileType.EXEC, h.getFileType());
@@ -45,7 +43,7 @@ public class BasicTest {
 		Assert.assertEquals(15856, h.getSectionHeaderOffset());
 		assertSectionNames(file, null, ".interp", ".dynsym", ".dynstr", ".hash", ".rel.dyn", ".rel.plt", ".plt", ".text");
 
-		ElfSection dynamic = file.getDynamicLinkSection();
+		ElfDynamicSection dynamic = file.getSectionHeaders().getSectionByName(".dynamic", ElfDynamicSection.class);
 		Assert.assertNotNull(dynamic);
 		// typedef struct {
 		// Elf32_Sword d_tag;
@@ -54,13 +52,11 @@ public class BasicTest {
 		// Elf32_Addr d_ptr;
 		// } d_un;
 		// } Elf32_Dyn;
-		Assert.assertEquals(8, dynamic.entry_size);
-		Assert.assertEquals(248, dynamic.size);
+		Assert.assertEquals(8, dynamic.getEntrySize());
+		Assert.assertEquals(248, dynamic.getFileSize());
+		//Assert.assertEquals(Arrays.asList("libncursesw.so.6", "libc.so", "libdl.so"), ds.getNeededLibraries());
 
-		ElfDynamicSection ds = dynamic.getDynamicSection();
-		Assert.assertEquals(Arrays.asList("libncursesw.so.6", "libc.so", "libdl.so"), ds.getNeededLibraries());
-
-		Assert.assertEquals("/system/bin/linker", file.getInterpreter());
+		//Assert.assertEquals("/system/bin/linker", file.getInterpreter());
 
 		// Dynamic section at offset 0x2e14 contains 26 entries:
 		// Tag Type Name/Value
