@@ -28,25 +28,27 @@ public class ElfNote {
         if (bytesRead != nameSize) {
             throw new ElfException("Error reading note (read " + bytesRead + "bytes - expected to " + "read " + nameSize + "bytes)");
         }
+        
         while (bytesRead % 4 != 0) { // finish reading the padding to the nearest 4 bytes
             parser.readUnsignedByte();
             bytesRead += 1;
         }
         
         // Check for null terminator
-        if(nameBytes[nameSize - 1] != '\0')
+        if(nameSize > 0 && nameBytes[nameSize - 1] != '\0')
         	throw new ElfException("Illegally formatted note");
         
         bytesRead = parser.read(note);
         if (bytesRead != descSize) {
             throw new ElfException("Error reading note (read " + bytesRead + "bytes - expected to " + "read " + descSize + "bytes)");
         }
+        
         while (bytesRead % 4 != 0) { // finish reading the padding to the nearest 4 bytes
             parser.readUnsignedByte();
             bytesRead += 1;
         }
         
-        name = new String(nameBytes, 0, nameSize-1); // unnecessary trailing 0
+        name = new String(nameBytes, 0, nameSize-1); // unnecessary trailing '\0'
     }
     
     public static ElfNote noteFactory(ElfNoteSection section, long offset) {
@@ -133,14 +135,18 @@ public class ElfNote {
      * @return Returns the size of the note name including extra characters and padding
      */
     public int getNameRawSize() {
-    	return (4 * (name.length() + 1) + 3) / 4;
+    	if(name.length() % 4 == 0)
+    		return name.length();
+    	return name.length() + 4 - (name.length() % 4);
     }
     
     /**
      * @return Returns the size of the note description including extra characters and padding
      */
     public int getDescRawSize() {
-    	return (4 * note.length + 3) / 4;
+    	if(note.length % 4 == 0)
+    		return note.length;
+    	return note.length + 4 - (note.length % 4);
     }
     
     /**

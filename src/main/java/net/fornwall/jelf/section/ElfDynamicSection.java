@@ -76,6 +76,21 @@ public class ElfDynamicSection extends ElfSection {
 	 * @throws ElfException An exception will be throw if no entry exists or
 	 * 	more than one entry exist.
 	 */
+	public <T extends ElfDynamicEntry> T getUniqueEntryOfType(int type, Class<T> c) {
+		return this.getUniqueEntryOfType(new ElfDynamicEntry.Type(type), c);
+	}
+	
+	/**
+	 * Returns the requested type and guarantees that one and only one
+	 * of the requested types exist. This is useful for fetching singleton
+	 * entries like {@link ElfDynamicEntry.Type#HASH} and {@link ElfDynamicEntry.Type#STRTAB}
+	 * 
+	 * @param type the type of entry to get
+	 * @param c the class of entry to get. The return type will be of this same class
+	 * @return Returns the requested {@link ElfDynamicEntry}
+	 * @throws ElfException An exception will be throw if no entry exists or
+	 * 	more than one entry exist.
+	 */
 	public <T extends ElfDynamicEntry> T getUniqueEntryOfType(ElfDynamicEntry.Type type, Class<T> c) {
 		List<ElfDynamicEntry> l = map.get(type.val);
 		
@@ -103,6 +118,14 @@ public class ElfDynamicSection extends ElfSection {
 	 * @param type the type of entries to fetch
 	 * @return Returns a list of all entries in the dynamic section which are of the provided type
 	 */
+	public List<ElfDynamicEntry> getEntriesOfType(int type) {
+		return this.getEntriesOfType(new ElfDynamicEntry.Type(type));
+	}
+	
+	/**
+	 * @param type the type of entries to fetch
+	 * @return Returns a list of all entries in the dynamic section which are of the provided type
+	 */
 	public List<ElfDynamicEntry> getEntriesOfType(ElfDynamicEntry.Type type) {
 		if(!map.containsKey(type.val))
 			return new ArrayList<ElfDynamicEntry>();
@@ -124,6 +147,16 @@ public class ElfDynamicSection extends ElfSection {
 				result.add(c.cast(e));
 		}
 		return result;
+	}
+	
+	/**
+	 * @param type the type of entries to fetch
+	 * @param c the class of entries to fetch
+	 * @return Returns a list of all entries in the dynamic section which are of both the
+	 * 	provided type and class
+	 */
+	public <T extends ElfDynamicEntry> List<T> getEntriesOfType(int type, Class<T> c) {
+		return this.getEntriesOfType(new ElfDynamicEntry.Type(type), c);
 	}
 	
 	/**

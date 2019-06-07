@@ -154,7 +154,7 @@ public class ElfHeader {
 		/** RISCV architecture type */
 		RISCV((short)0xF3);
 		
-		private final short val;
+		public final short val;
 		
 		private Machine(short val) {
 			this.val = val;
