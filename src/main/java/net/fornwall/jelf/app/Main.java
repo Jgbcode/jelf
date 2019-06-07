@@ -37,21 +37,13 @@ public class Main {
 
 		// Similar to readelf -a <elf_file>
 		printHeader(file);
-		System.out.println();
 		printSectionHeaders(file);
-		System.out.println();
 		printProgramHeaders(file);
-		System.out.println();
 		printSectionMapping(file);
-		System.out.println();
 		printSymbolTables(file);
-		System.out.println();
 		printRelocationSections(file);
-		System.out.println();
 		printNoteSections(file);
-		System.out.println();
 		printStringTables(file);
-		System.out.println();
 		printDynamicSections(file);
 	}
 	
