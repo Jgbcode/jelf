@@ -2,6 +2,8 @@ package net.fornwall.jelf.section;
 
 import net.fornwall.jelf.ElfException;
 import net.fornwall.jelf.ElfParser;
+import net.fornwall.jelf.Table;
+import net.fornwall.jelf.Table.Align;
 
 public class ElfStringTableSection extends ElfSection {
 	/** The string table data. */
@@ -54,5 +56,55 @@ public class ElfStringTableSection extends ElfSection {
 	 */
 	public int getStringCount() {
 		return numStrings;
+	}
+	
+	/**
+	 * See {@link #toString()} to get the formatted string directly
+	 * 
+	 * @return Returns a {@link Table} object that contains the formatted contents of this header.
+	 */
+	public Table getFormattedTable() {
+		Table t = new Table("String table section \'" + getName() + "\' at offset 0x" + 
+				Long.toHexString(getFileOffset()) + " contains " + getStringCount() + " entries");
+		
+		// Column names
+		t.addCell("Offset");
+		t.setColAlign(Align.RIGHT);
+		
+		t.addCell("Size");
+		t.setColAlign(Align.RIGHT);
+		
+		t.addCell("String");
+		t.setColAlign(Align.LEFT);
+		
+		int offset = 0;
+		for(int i = 0; i < getStringCount();) {
+			String str = getString(offset);
+			if(str.isEmpty()) {
+				offset++;
+				continue;
+			}
+			i++;
+			
+			t.newRow();
+			
+			// Offset
+			t.addCell("0x" + Integer.toHexString(offset));
+			
+			// Size
+			t.addCell("0x" + Integer.toHexString(str.length()));
+			
+			// String
+			t.addCell(str);
+			
+			offset += str.length();
+		}
+		
+		return t;
+	}
+	
+	@Override
+	public String toString() {
+		return this.getFormattedTable().toString();
 	}
 }

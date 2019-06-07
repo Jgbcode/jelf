@@ -11,7 +11,6 @@ import net.fornwall.jelf.section.ElfSection;
 import net.fornwall.jelf.section.ElfStringTableSection;
 import net.fornwall.jelf.section.ElfSymbolTableSection;
 import net.fornwall.jelf.section.dynamic.ElfDynamicEntry;
-import net.fornwall.jelf.section.note.ElfNote;
 
 public class Main {
 
@@ -54,8 +53,11 @@ public class Main {
 		for(ElfNoteSection s : file.getSectionHeaders().getSectionsOfType(ElfNoteSection.class))
 			System.out.println(s);
 		
+		// Print string table sections
+		for(ElfStringTableSection s : file.getSectionHeaders().getSectionsOfType(ElfStringTableSection.class))
+			System.out.println(s);
 		
-		printStringTables(file);
+		
 		printDynamicSections(file);
 	}
 	
@@ -86,50 +88,6 @@ public class Main {
 		}
 		
 		t.printTable();
-	}
-	
-	public static void printStringTables(ElfFile file) {
-		List<ElfStringTableSection> strtabs = file.getSectionHeaders().getSectionsOfType(ElfStringTableSection.class);
-		
-		for(ElfStringTableSection s : strtabs) {
-			Table t = new Table("String table section \'" + s.getName() + "\' at offset 0x" + 
-					Long.toHexString(s.getFileOffset()) + " contains " + s.getStringCount() + " entries");
-			
-			// Column names
-			t.addCell("Offset");
-			t.setColAlign(Align.RIGHT);
-			
-			t.addCell("Size");
-			t.setColAlign(Align.RIGHT);
-			
-			t.addCell("String");
-			t.setColAlign(Align.LEFT);
-			
-			int offset = 0;
-			for(int i = 0; i < s.getStringCount();) {
-				String str = s.getString(offset);
-				if(str.isEmpty()) {
-					offset++;
-					continue;
-				}
-				i++;
-				
-				t.newRow();
-				
-				// Offset
-				t.addCell("0x" + Integer.toHexString(offset));
-				
-				// Size
-				t.addCell("0x" + Integer.toHexString(str.length()));
-				
-				// String
-				t.addCell(str);
-				
-				offset += str.length();
-			}
-			
-			t.printTable();
-		}
 	}
 	
 	public static void printDynamicSections(ElfFile file) {
