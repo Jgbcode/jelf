@@ -15,7 +15,6 @@ import net.fornwall.jelf.section.note.ElfNote;
 import net.fornwall.jelf.section.relocation.ElfAddendRelocation;
 import net.fornwall.jelf.section.relocation.ElfRelocation;
 import net.fornwall.jelf.section.symbol.ElfSymbol;
-import net.fornwall.jelf.segment.ElfSegment;
 
 public class Main {
 
@@ -34,11 +33,21 @@ public class Main {
 		ElfFile file = new ElfFile(new File(args[0]));
 
 		// Similar to readelf -a <elf_file>
+		
+		// Print header data
 		System.out.println(file.getHeader());
+		
+		// Print section data
 		System.out.println(file.getSectionHeaders());
+		
+		// Print segment data
 		System.out.println(file.getProgramHeaders());
 		printSectionMapping(file);
-		printSymbolTables(file);
+		
+		// Print symbol tables
+		for(ElfSymbolTableSection s : file.getSectionHeaders().getSectionsOfType(ElfSymbolTableSection.class))
+			System.out.println(s);
+		
 		printRelocationSections(file);
 		printNoteSections(file);
 		printStringTables(file);

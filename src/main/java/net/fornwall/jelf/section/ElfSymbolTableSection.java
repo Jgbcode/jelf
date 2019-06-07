@@ -1,6 +1,8 @@
 package net.fornwall.jelf.section;
 
 import net.fornwall.jelf.ElfException;
+import net.fornwall.jelf.Table;
+import net.fornwall.jelf.Table.Align;
 import net.fornwall.jelf.section.symbol.ElfSymbol;
 
 public class ElfSymbolTableSection extends ElfSection {
@@ -55,5 +57,76 @@ public class ElfSymbolTableSection extends ElfSection {
 	 */
 	public int getFirstNonLocal() {
 		return super.getInfo();
+	}
+	
+	/**
+	 * See {@link #toString()} to get the formatted string directly
+	 * 
+	 * @return Returns a {@link Table} object that contains the formatted contents of this header.
+	 */
+	public Table getFormattedTable() {
+		Table t = new Table("Symbol table '" + getName() + "' contains " + getSymbolCount() + " entries:");
+		
+		// Column names
+		t.addCell("Num:");
+		t.setColAlign(Align.RIGHT);
+		
+		t.addCell("Value");
+		t.setColAlign(Align.RIGHT);
+		
+		t.addCell("Size");
+		t.setColAlign(Align.RIGHT);
+		
+		t.addCell("Type");
+		t.setColAlign(Align.LEFT);
+		
+		t.addCell("Bind");
+		t.setColAlign(Align.LEFT);
+		
+		t.addCell("Vis");
+		t.setColAlign(Align.LEFT);
+		
+		t.addCell("Ndx");
+		t.setColAlign(Align.RIGHT);
+		
+		t.addCell("Name");
+		t.setColAlign(Align.LEFT);
+		
+		for(int i = 0; i < getSymbolCount(); i++) {
+			t.newRow();
+			
+			ElfSymbol e = getSymbol(i);
+			
+			// Number
+			t.addCell(i + ":");
+			
+			// Value
+			t.addCell("0x" + Long.toHexString(e.getValue()));
+			
+			// Size
+			t.addCell(Long.toString(e.getSize()));
+			
+			// Type
+			t.addCell(e.getType().name());
+			
+			// Bind
+			t.addCell(e.getBinding().name());
+			
+			// Visibility
+			t.addCell(e.getOther().name());
+			
+			// Section Index
+			t.addCell(e.getSectionHeaderIndex().name());
+			
+			// Name
+			t.addCell(e.getName());
+		}
+		
+		return t;
+	}
+	
+	@Override
+	public String toString() {
+		return this.getFormattedTable().toString();
 	}
 }
