@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import net.fornwall.jelf.section.ElfDynamicSection;
 import net.fornwall.jelf.section.dynamic.ElfNeededDynamicEntry;
+import net.fornwall.jelf.segment.ElfInterpreterSegment;
 
 public class BasicTest {
 	private static void assertSectionNames(ElfFile file, String... expectedSectionNames) throws IOException {
@@ -58,7 +59,7 @@ public class BasicTest {
 		
 		Assert.assertEquals(Arrays.asList("libncursesw.so.6", "libc.so", "libdl.so"), libs);
 
-		// Assert.assertEquals("/system/bin/linker", file.getInterpreter());
+		Assert.assertEquals("/system/bin/linker", file.getProgramHeaders().getUniqueSegmentOfType(ElfInterpreterSegment.class).getInterpreter());
 
 		// Dynamic section at offset 0x2e14 contains 26 entries:
 		// Tag Type Name/Value
@@ -106,7 +107,7 @@ public class BasicTest {
 		Assert.assertEquals(ElfHeader.DataFormat.ELFDATA2LSB, h.getDataFormat());
 		Assert.assertEquals(ElfHeader.FileType.DYN, h.getFileType());
 		Assert.assertEquals(ElfHeader.Machine.ARM, h.getMachine());
-		// Assert.assertEquals("/system/bin/linker", file.getInterpreter());
+		Assert.assertEquals("/system/bin/linker", file.getProgramHeaders().getUniqueSegmentOfType(ElfInterpreterSegment.class).getInterpreter());
 	}
 
 	@Test
@@ -135,7 +136,7 @@ public class BasicTest {
 		
 		Assert.assertEquals(Arrays.asList("libc.so.6"), libs);
 
-		// Assert.assertEquals("/lib64/ld-linux-x86-64.so.2", file.getInterpreter());
+		Assert.assertEquals("/lib64/ld-linux-x86-64.so.2", file.getProgramHeaders().getUniqueSegmentOfType(ElfInterpreterSegment.class).getInterpreter());
 	}
 
 }
