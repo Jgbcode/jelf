@@ -43,6 +43,83 @@ public class ElfProgramHeaders {
 	}
 	
 	/**
+	 * @param type the type of segment to get
+	 * @return Returns a the segment of the provided type
+	 * @throws ElfException if there does not exist exactly one entry
+	 * 	of the provided type
+	 */
+	public ElfSegment getUniqueSegmentOfType(int type) {
+		return getUniqueSegmentOfType(new ElfSegment.Type(type));
+	}
+	
+	/**
+	 * @param type the type of segment to get
+	 * @return Returns a the segment of the provided type
+	 * @throws ElfException if there does not exist exactly one entry
+	 * 	of the provided type
+	 */
+	public ElfSegment getUniqueSegmentOfType(ElfSegment.Type type) {
+		ElfSegment unique = null;
+		for(ElfSegment s : segments) {
+			if(s.getType().equals(type)) {
+				if(unique != null)
+					throw new ElfException("Duplicatation of unique segment entry: " + type.name());
+				unique = s;
+			}
+		}
+		
+		if(unique == null)
+			throw new ElfException("Unique segment entry '" + type.name() + "' does not exist");
+		return unique;
+	}
+	
+	/**
+	 * @param c the class of segment to get
+	 * @return Returns a the segment of the provided type
+	 * @throws ElfException if there does not exist exactly one entry
+	 * 	of the provided type
+	 */
+	public <T extends ElfSegment> T getUniqueSegmentOfType(Class<T> c) {
+		T unique = null;
+		for(ElfSegment s : segments) {
+			if(c.isInstance(s)) {
+				if(unique != null)
+					throw new ElfException("Duplicatation of unique segment entry: " + c.getSimpleName());
+				unique = c.cast(s);
+			}
+		}
+		
+		if(unique == null)
+			throw new ElfException("Unique segment entry '" + c.getSimpleName() + "' does not exist");
+		return unique;
+	}
+	
+	/**
+	 * @param type the type of segment to get
+	 * @param c the class of segment to get
+	 * @return Returns a the segment of the provided type
+	 * @throws ElfException if there does not exist exactly one entry
+	 * 	of the provided type
+	 */
+	public <T extends ElfSegment> T getUniqueSegmentOfType(int type, Class<T> c) {
+		return getUniqueSegmentOfType(new ElfSegment.Type(type), c);
+	}
+	
+	/**
+	 * @param type the type of segment to get
+	 * @param c the class of segment to get
+	 * @return Returns a the segment of the provided type
+	 * @throws ElfException if there does not exist exactly one entry
+	 * 	of the provided type
+	 */
+	public <T extends ElfSegment> T getUniqueSegmentOfType(ElfSegment.Type type, Class<T> c) {
+		T unique = getUniqueSegmentOfType(c);
+		if(unique.getType().equals(type))
+			return unique;
+		throw new ElfException("No segment entry of both type " + type.name() + " and " + c.getSimpleName());
+	}
+	
+	/**
 	 * See {@link #toString()} to get the formatted string directly
 	 * 
 	 * @return Returns a {@link Table} object that contains the formatted contents of this object.
@@ -51,28 +128,28 @@ public class ElfProgramHeaders {
 		Table t = new Table("Program Headers");
 		
 		// Column names
-		t.addCell("Type");
+		t.add("Type");
 		t.setColAlign(Align.LEFT);
 		
-		t.addCell("Offset");
+		t.add("Offset");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("VirtAddr");
+		t.add("VirtAddr");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("PhysAddr");
+		t.add("PhysAddr");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("FileSize");
+		t.add("FileSize");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("MemSize");
+		t.add("MemSize");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("Flags");
+		t.add("Flags");
 		t.setColAlign(Align.LEFT);
 		
-		t.addCell("Align");
+		t.add("Align");
 		t.setColAlign(Align.RIGHT);
 		
 		for(int i = 0; i < file.getProgramHeaders().size(); i++) {
@@ -81,28 +158,28 @@ public class ElfProgramHeaders {
 			ElfSegment s = file.getProgramHeaders().getSegmentByIndex(i);
 			
 			// Type
-			t.addCell(s.getType().name());
+			t.add(s.getType().name());
 			
 			// Offset
-			t.addCell("0x" + Long.toHexString(s.getOffset()));
+			t.add("0x" + Long.toHexString(s.getOffset()));
 			
 			// Virtual Address
-			t.addCell("0x" + Long.toHexString(s.getVirtualAddress()));
+			t.add("0x" + Long.toHexString(s.getVirtualAddress()));
 			
 			// Physical Address
-			t.addCell("0x" + Long.toHexString(s.getPhysicalAddress()));
+			t.add("0x" + Long.toHexString(s.getPhysicalAddress()));
 			
 			// File Size
-			t.addCell("0x" + Long.toHexString(s.getFileSize()));
+			t.add("0x" + Long.toHexString(s.getFileSize()));
 			
 			// MemSize
-			t.addCell("0x" + Long.toHexString(s.getMemSize()));
+			t.add("0x" + Long.toHexString(s.getMemSize()));
 			
 			// Flags
-			t.addCell(s.getFlags().name());
+			t.add(s.getFlags().name());
 			
 			// Align
-			t.addCell("0x" + Long.toHexString(s.getAlignment()));
+			t.add("0x" + Long.toHexString(s.getAlignment()));
 		}
 		
 		return t;

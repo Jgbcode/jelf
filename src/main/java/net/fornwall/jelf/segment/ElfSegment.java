@@ -118,6 +118,11 @@ public class ElfSegment {
 				return "?";
 			}
 		}
+		
+		@Override
+		public boolean equals(Object o) {
+			return o instanceof ElfSegment.Type && ((ElfSegment.Type)o).val == val;
+		}
 	}
 	
 	public static class Flag {
@@ -244,9 +249,11 @@ public class ElfSegment {
 	public static ElfSegment segmentFactory(ElfFile file, long offset) {
 		ElfSegment s = new ElfSegment(file, offset);
 		
-		/*
-		 * Create subclasses as needed
-		 */
+		// Return subclasses if necessary
+		switch(s.getType().val) {
+		case Type.INTERP:
+			return new ElfInterpreterSegment(s);
+		}
 		
 		return s;
 	} 

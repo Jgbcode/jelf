@@ -64,17 +64,17 @@ public class Main {
 		Table t = new Table("Section to Segment mapping:");
 		
 		// Column names
-		t.addCell("Segment");
+		t.add("Segment");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("Sections...");
+		t.add("Sections...");
 		t.setColAlign(Align.LEFT);
 		
 		for(int i = 0; i < file.getProgramHeaders().size(); i++) {
 			t.newRow();
 			
 			// Segment
-			t.addCell(Integer.toString(i));
+			t.add(Integer.toString(i));
 			
 			// Sections
 			String sections = "";
@@ -83,7 +83,7 @@ public class Main {
 					sections += s.getName() + " ";
 			}
 			
-			t.addCell(sections);
+			t.add(sections);
 		}
 		
 		t.printTable();

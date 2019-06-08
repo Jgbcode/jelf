@@ -56,16 +56,16 @@ public class ElfNoteSection extends ElfSection {
 		Table t = new Table("Displaying notes found in: " + getName());
 		
 		// Column names
-		t.addCell("Owner");
+		t.add("Owner");
 		t.setColAlign(Align.LEFT);
 		
-		t.addCell("DataSize");
+		t.add("DataSize");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("Description");
+		t.add("Description");
 		t.setColAlign(Align.LEFT);
 		
-		t.addCell("Note");
+		t.add("Note");
 		t.setColAlign(Align.LEFT);
 		
 		t.newRow();
@@ -74,13 +74,13 @@ public class ElfNoteSection extends ElfSection {
 			ElfNote n = getNote(i);
 			
 			// Owner
-			t.addCell(n.getNoteName());
+			t.add(n.getNoteName());
 			
 			// Data size
-			t.addCell("0x" + Integer.toHexString(n.getDescSize()));
+			t.add("0x" + Integer.toHexString(n.getDescSize()));
 			
 			// Description
-			t.addCell(Integer.toString(n.getNoteType()));
+			t.add(Integer.toString(n.getNoteType()));
 			
 			// Note
 			String str = "";
@@ -88,7 +88,7 @@ public class ElfNoteSection extends ElfSection {
 				str = Integer.toHexString(n.getDescByte(i) & 0xf) + str;
 				str = Integer.toHexString(n.getDescByte(i) >> 4) + str;
 			}
-			t.addCell(str);
+			t.add(str);
 			
 			// Most notes don't seem to contain string data
 			// t.addCell(n.getDescString());

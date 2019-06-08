@@ -392,66 +392,66 @@ public class ElfHeader {
 	public Table getFormattedTable() {
 		Table t = new Table("ELF Header:");
 		
-		t.addCell("Class:");
+		t.add("Class:");
 		t.setColAlign(Align.LEFT);
-		t.addCell(getBitClass().name());
+		t.add(getBitClass().name());
 		t.setColAlign(Align.LEFT);
 		t.newRow();
 		
-		t.addCell("Data:");
-		t.addCell(getDataFormat().name());
+		t.add("Data:");
+		t.add(getDataFormat().name());
 		t.newRow();
 		
-		t.addCell("Version:");
-		t.addCell(getVersion().name());
+		t.add("Version:");
+		t.add(getVersion().name());
 		t.newRow();
 		
-		t.addCell("Type:");
-		t.addCell(getFileType().name());
+		t.add("Type:");
+		t.add(getFileType().name());
 		t.newRow();
 		
-		t.addCell("Machine:");
-		t.addCell(getMachine().name());
+		t.add("Machine:");
+		t.add(getMachine().name());
 		t.newRow();
 		
-		t.addCell("Entry point address:");
-		t.addCell("0x" + Long.toHexString(getEntryAddress()));
+		t.add("Entry point address:");
+		t.add("0x" + Long.toHexString(getEntryAddress()));
 		t.newRow();
 		
-		t.addCell("Start of program headers:");
-		t.addCell(getProgramHeaderOffset() + " (bytes into file)");
+		t.add("Start of program headers:");
+		t.add(getProgramHeaderOffset() + " (bytes into file)");
 		t.newRow();
 		
-		t.addCell("Start of section headers:");
-		t.addCell(getSectionHeaderOffset() + " (bytes into file)");
+		t.add("Start of section headers:");
+		t.add(getSectionHeaderOffset() + " (bytes into file)");
 		t.newRow();
 		
-		t.addCell("Flags:");
-		t.addCell(Integer.toHexString(getFlags()));
+		t.add("Flags:");
+		t.add(Integer.toHexString(getFlags()));
 		t.newRow();
 		
-		t.addCell("Size of this header:");
-		t.addCell(getSize() + " (bytes)");
+		t.add("Size of this header:");
+		t.add(getSize() + " (bytes)");
 		t.newRow();
 		
-		t.addCell("Size of program headers:");
-		t.addCell(getProgramHeaderEntrySize() + " (bytes)");
+		t.add("Size of program headers:");
+		t.add(getProgramHeaderEntrySize() + " (bytes)");
 		t.newRow();
 		
-		t.addCell("Number of program headers:");
-		t.addCell(Short.toString(getProgramHeaderEntryCount()));
+		t.add("Number of program headers:");
+		t.add(Short.toString(getProgramHeaderEntryCount()));
 		t.newRow();
 		
-		t.addCell("Size of section headers:");
-		t.addCell(getSectionHeaderEntrySize() + " (bytes)");
+		t.add("Size of section headers:");
+		t.add(getSectionHeaderEntrySize() + " (bytes)");
 		t.newRow();
 		
-		t.addCell("Number of section headers:");
-		t.addCell(Short.toString(getSectionHeaderEntryCount()));
+		t.add("Number of section headers:");
+		t.add(Short.toString(getSectionHeaderEntryCount()));
 		t.newRow();
 		
-		t.addCell("Section header string table index:");
-		t.addCell(Short.toString(getSectionHeaderStringTableIndex()));
+		t.add("Section header string table index:");
+		t.add(Short.toString(getSectionHeaderStringTableIndex()));
 		
 		return t;
 	}

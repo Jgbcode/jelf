@@ -237,37 +237,37 @@ public class ElfSectionHeaders {
 		Table t = new Table("Section Headers:");
 		
 		// Column names
-		t.addCell("[Nr]");
+		t.add("[Nr]");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("Name");
+		t.add("Name");
 		t.setColAlign(Align.LEFT);
 		
-		t.addCell("Size");
+		t.add("Size");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("Type");
+		t.add("Type");
 		t.setColAlign(Align.LEFT);
 		
-		t.addCell("EntSize");
+		t.add("EntSize");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("Address");
+		t.add("Address");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("Flags");
+		t.add("Flags");
 		t.setColAlign(Align.LEFT);
 		
-		t.addCell("Link");
+		t.add("Link");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("Info");
+		t.add("Info");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("Offset");
+		t.add("Offset");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("Align");
+		t.add("Align");
 		t.setColAlign(Align.RIGHT);
 		
 		for(int i = 0; i < file.getSectionHeaders().size(); i++) {
@@ -276,37 +276,37 @@ public class ElfSectionHeaders {
 			ElfSection s = file.getSectionHeaders().getSectionByIndex(i);
 			
 			// Index
-			t.addCell("[" + i + "]");
+			t.add("[" + i + "]");
 			
 			// Name
-			t.addCell(s.getName());
+			t.add(s.getName());
 			
 			// Size
-			t.addCell("0x" + Long.toHexString(s.getFileSize()));
+			t.add("0x" + Long.toHexString(s.getFileSize()));
 			
 			// Type
-			t.addCell(s.getType().name());
+			t.add(s.getType().name());
 			
 			// EntSize
-			t.addCell("0x" + Long.toHexString(s.getEntrySize()));
+			t.add("0x" + Long.toHexString(s.getEntrySize()));
 			
 			// Address
-			t.addCell("0x" + Long.toHexString(s.getAddress()));
+			t.add("0x" + Long.toHexString(s.getAddress()));
 			
 			// Flags
-			t.addCell(s.getFlags().name());
+			t.add(s.getFlags().name());
 			
 			// Link
-			t.addCell(Integer.toString(s.getLinkIndex()));
+			t.add(Integer.toString(s.getLinkIndex()));
 			
 			// Info
-			t.addCell(Integer.toString(s.getInfo()));
+			t.add(Integer.toString(s.getInfo()));
 			
 			// Offset
-			t.addCell("0x" + Long.toHexString(s.getFileOffset()));
+			t.add("0x" + Long.toHexString(s.getFileOffset()));
 			
 			// Align
-			t.addCell(Long.toString(s.getAlignment()));
+			t.add(Long.toString(s.getAlignment()));
 		}
 		
 		return t;

@@ -68,28 +68,28 @@ public class ElfSymbolTableSection extends ElfSection {
 		Table t = new Table("Symbol table '" + getName() + "' contains " + getSymbolCount() + " entries:");
 		
 		// Column names
-		t.addCell("Num:");
+		t.add("Num:");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("Value");
+		t.add("Value");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("Size");
+		t.add("Size");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("Type");
+		t.add("Type");
 		t.setColAlign(Align.LEFT);
 		
-		t.addCell("Bind");
+		t.add("Bind");
 		t.setColAlign(Align.LEFT);
 		
-		t.addCell("Vis");
+		t.add("Vis");
 		t.setColAlign(Align.LEFT);
 		
-		t.addCell("Ndx");
+		t.add("Ndx");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("Name");
+		t.add("Name");
 		t.setColAlign(Align.LEFT);
 		
 		for(int i = 0; i < getSymbolCount(); i++) {
@@ -98,28 +98,28 @@ public class ElfSymbolTableSection extends ElfSection {
 			ElfSymbol e = getSymbol(i);
 			
 			// Number
-			t.addCell(i + ":");
+			t.add(i + ":");
 			
 			// Value
-			t.addCell("0x" + Long.toHexString(e.getValue()));
+			t.add("0x" + Long.toHexString(e.getValue()));
 			
 			// Size
-			t.addCell(Long.toString(e.getSize()));
+			t.add(Long.toString(e.getSize()));
 			
 			// Type
-			t.addCell(e.getType().name());
+			t.add(e.getType().name());
 			
 			// Bind
-			t.addCell(e.getBinding().name());
+			t.add(e.getBinding().name());
 			
 			// Visibility
-			t.addCell(e.getOther().name());
+			t.add(e.getOther().name());
 			
 			// Section Index
-			t.addCell(e.getSectionHeaderIndex().name());
+			t.add(e.getSectionHeaderIndex().name());
 			
 			// Name
-			t.addCell(e.getName());
+			t.add(e.getName());
 		}
 		
 		return t;

@@ -80,23 +80,23 @@ public class ElfRelocationSection extends ElfSection {
 				Long.toHexString(getFileOffset()) + " contains " + getRelocationCount() + " entries:");
 		
 		// Column names
-		t.addCell("Offset");
+		t.add("Offset");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("Info");
+		t.add("Info");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("Type");
+		t.add("Type");
 		t.setColAlign(Align.LEFT);
 		
-		t.addCell("SymValue");
+		t.add("SymValue");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("SymName");
+		t.add("SymName");
 		t.setColAlign(Align.LEFT);
 		
 		if(getType().val == ElfSection.Type.RELA) {
-			t.addCell("Addend");
+			t.add("Addend");
 			t.setColAlign(Align.RIGHT);
 		}
 		
@@ -106,22 +106,22 @@ public class ElfRelocationSection extends ElfSection {
 			ElfRelocation re = getRelocation(i);
 			
 			// Offset
-			t.addCell("0x" + Long.toHexString(re.getOffset()));
+			t.add("0x" + Long.toHexString(re.getOffset()));
 			
 			// Info
-			t.addCell("0x" + Long.toHexString(re.getInfo()));
+			t.add("0x" + Long.toHexString(re.getInfo()));
 			
 			// Type
-			t.addCell(re.getType().name());
+			t.add(re.getType().name());
 			
 			// Symbol value
-			t.addCell(Long.toHexString(re.getSymbol().getValue()));
+			t.add(Long.toHexString(re.getSymbol().getValue()));
 			
 			// Symbol name
-			t.addCell(re.getSymbol().getName());
+			t.add(re.getSymbol().getName());
 			
 			if(re instanceof ElfAddendRelocation) {
-				t.addCell("0x" + Long.toHexString(((ElfAddendRelocation)re).getAddend()));
+				t.add("0x" + Long.toHexString(((ElfAddendRelocation)re).getAddend()));
 			}
 		}
 		

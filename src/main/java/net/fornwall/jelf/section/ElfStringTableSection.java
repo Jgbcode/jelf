@@ -68,13 +68,13 @@ public class ElfStringTableSection extends ElfSection {
 				Long.toHexString(getFileOffset()) + " contains " + getStringCount() + " entries");
 		
 		// Column names
-		t.addCell("Offset");
+		t.add("Offset");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("Size");
+		t.add("Size");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("String");
+		t.add("String");
 		t.setColAlign(Align.LEFT);
 		
 		int offset = 0;
@@ -89,13 +89,13 @@ public class ElfStringTableSection extends ElfSection {
 			t.newRow();
 			
 			// Offset
-			t.addCell("0x" + Integer.toHexString(offset));
+			t.add("0x" + Integer.toHexString(offset));
 			
 			// Size
-			t.addCell("0x" + Integer.toHexString(str.length()));
+			t.add("0x" + Integer.toHexString(str.length()));
 			
 			// String
-			t.addCell(str);
+			t.add(str);
 			
 			offset += str.length();
 		}

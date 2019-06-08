@@ -189,13 +189,13 @@ public class ElfDynamicSection extends ElfSection {
 				getEntryCount() + " entries:");
 		
 		// Column names
-		t.addCell("Tag");
+		t.add("Tag");
 		t.setColAlign(Align.RIGHT);
 		
-		t.addCell("Type");
+		t.add("Type");
 		t.setColAlign(Align.LEFT);
 		
-		t.addCell("Name / Value");
+		t.add("Name / Value");
 		t.setColAlign(Align.LEFT);
 		
 		for(int i = 0; i < getEntryCount(); i++) {
@@ -204,13 +204,13 @@ public class ElfDynamicSection extends ElfSection {
 			ElfDynamicEntry e = getEntry(i);
 			
 			// Tag
-			t.addCell("0x" + Long.toHexString(e.getType().val));
+			t.add("0x" + Long.toHexString(e.getType().val));
 			
 			// Type
-			t.addCell("(" + e.getType().name() + ")");
+			t.add("(" + e.getType().name() + ")");
 			
 			// Value
-			t.addCell(e.toString());
+			t.add(e.toString());
 		}
 		
 		return t;

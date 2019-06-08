@@ -51,7 +51,7 @@ public class Table {
 	 * 
 	 * @param cell the contents of the new cell
 	 */
-	public void addCell(String cell) {
+	public void add(String cell) {
 		table.get(table.size() - 1).add(cell);
 	}
 	
